@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="robots" content="index, follow" />
+  <meta name="description" content="Commission an original Heirloom portrait painted by a partnered portrait artist." />
+  <title>Heirloom — Commission interest</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600;700&family=Tenor+Sans&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --cream: #F3EEE6;
+      --ink: #2B2A28;
+      --soft: #5C5852;
+      --line: #D4CDC2;
+      --error: #8B3A2F;
+      --mark: Optima, Candara, "Segoe UI", "Tenor Sans", sans-serif;
+      --sans: "Source Sans 3", sans-serif;
+      --radius: 14px;
+      --pad: 22px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { min-height: 100%; }
+    body {
+      font-family: var(--sans);
+      background: var(--cream);
+      color: var(--ink);
+      -webkit-font-smoothing: antialiased;
+      line-height: 1.45;
+    }
+    .app {
+      max-width: 430px;
+      min-height: 100dvh;
+      margin: 0 auto;
+      padding: 28px var(--pad) 48px;
+      display: flex;
+      flex-direction: column;
+    }
+    .mark {
+      font-family: var(--mark);
+      font-weight: 400;
+      letter-spacing: 0.28em;
+      font-size: clamp(1.15rem, 5vw, 1.45rem);
+      text-align: center;
+      text-indent: 0.28em;
+    }
+    .tag {
+      text-align: center;
+      margin-top: 10px;
+      font-size: clamp(1rem, 4vw, 1.15rem);
+      color: var(--ink);
+    }
+    .flourish {
+      margin: 16px auto 0;
+      width: 72px;
+      height: 14px;
+      background: center / contain no-repeat
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 20' fill='none' stroke='%232b2a28' stroke-width='1.2'%3E%3Cpath d='M8 10 H48 M72 10 H112'/%3E%3Cpath d='M60 4c-4 4-4 8 0 12 4-4 4-8 0-12z'/%3E%3C/svg%3E");
+    }
+    .lede {
+      text-align: center;
+      color: var(--soft);
+      font-size: 1rem;
+      margin: 22px 0 26px;
+    }
+    .lede strong { color: var(--ink); font-weight: 600; }
+    .panel { flex: 1; display: flex; flex-direction: column; }
+    label.field-label {
+      display: block;
+      font-size: 0.92rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: var(--ink);
+    }
+    .req { color: var(--soft); font-weight: 500; font-size: 0.85rem; }
+    .hint { font-size: 0.85rem; color: var(--soft); margin: -2px 0 10px; font-weight: 500; }
+    .field { margin-bottom: 18px; }
+    input[type="text"],
+    input[type="email"],
+    select,
+    textarea {
+      width: 100%;
+      font-family: inherit;
+      font-size: 1.1rem;
+      padding: 14px 16px;
+      border-radius: var(--radius);
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--ink);
+      appearance: none;
+      -webkit-appearance: none;
+    }
+    textarea { min-height: 96px; resize: vertical; }
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--ink);
+      box-shadow: 0 0 0 1px var(--ink);
+    }
+    input.invalid, .chips.invalid {
+      border-color: var(--error);
+      box-shadow: 0 0 0 1px var(--error);
+    }
+    .error-msg {
+      display: none;
+      color: var(--error);
+      font-size: 0.88rem;
+      margin-top: 6px;
+    }
+    .error-msg.show { display: block; }
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      border: 1px solid transparent;
+      border-radius: var(--radius);
+      padding: 2px;
+    }
+    .chip {
+      font-family: inherit;
+      font-size: 0.98rem;
+      font-weight: 500;
+      padding: 10px 16px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--ink);
+      cursor: pointer;
+      user-select: none;
+    }
+    .chip[aria-pressed="true"] {
+      background: var(--ink);
+      color: var(--cream);
+      border-color: var(--ink);
+    }
+    .consent {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      margin: 6px 0 22px;
+      font-size: 0.95rem;
+      color: var(--soft);
+      line-height: 1.4;
+    }
+    .consent input {
+      width: 22px;
+      height: 22px;
+      margin-top: 1px;
+      flex-shrink: 0;
+      accent-color: var(--ink);
+    }
+    .consent.invalid label { color: var(--error); }
+    .cta {
+      font-family: var(--sans);
+      font-size: 1.1rem;
+      font-weight: 600;
+      border: 0;
+      border-radius: var(--radius);
+      padding: 16px 18px;
+      width: 100%;
+      cursor: pointer;
+      background: var(--ink);
+      color: var(--cream);
+      margin-top: auto;
+    }
+    .cta:hover { opacity: 0.92; }
+    .cta:disabled { opacity: 0.6; cursor: wait; }
+    .note {
+      text-align: center;
+      margin-top: 18px;
+      font-size: 0.85rem;
+      color: var(--soft);
+    }
+    .note a {
+      color: var(--soft);
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+    .hp {
+      position: absolute;
+      left: -9999px;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+    }
+    @media (min-width: 480px) {
+      .app { padding-top: 40px; padding-bottom: 56px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <div class="mark">HEIRLOOM</div>
+      <!-- COPY: commission tagline -->
+      <p class="tag">Keep your loved ones close.</p>
+      <div class="flourish" aria-hidden="true"></div>
+    </header>
+
+    <div class="panel" id="formPanel">
+      <!-- COPY: commission lede — edit this paragraph only -->
+      <p class="lede"><strong>Are you interested in commissioning an original Heirloom portrait painted by one of our portrait artists?</strong><br /><br />Tell us a little — we’ll follow up when partnered artists are ready to take commissions.</p>
+
+      <form
+        id="commissionForm"
+        action="https://formsubmit.co/hello@heirloomportraits.love"
+        method="POST"
+        novalidate
+      >
+        <input type="hidden" name="_subject" value="Heirloom commission interest" />
+        <input type="hidden" name="_captcha" value="false" />
+        <input type="hidden" name="_template" value="table" />
+        <input type="hidden" name="_next" value="https://heirloomportraits.love/thank-you.html" />
+        <input type="text" name="_honey" value="" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true" />
+
+        <div class="field">
+          <label class="field-label" for="name">Name</label>
+          <input id="name" name="name" type="text" autocomplete="name" placeholder="Your name" />
+        </div>
+
+        <div class="field">
+          <label class="field-label" for="email">Email <span class="req">*</span></label>
+          <input id="email" name="email" type="email" inputmode="email" autocomplete="email" required placeholder="you@email.com" aria-required="true" />
+          <p class="error-msg" id="emailError" role="alert"></p>
+        </div>
+
+        <div class="field">
+          <label class="field-label" for="location">Zip or city <span class="req">(optional)</span></label>
+          <input id="location" name="location" type="text" autocomplete="postal-code" placeholder="e.g. Nashville or 37203" />
+        </div>
+
+        <div class="field">
+          <span class="field-label" id="subjectsLabel">I’d like a painted portrait of:</span>
+          <p class="hint" id="subjectsHint">Select all that apply</p>
+          <div class="chips" id="subjectChips" role="group" aria-labelledby="subjectsLabel" aria-describedby="subjectsHint" aria-multiselectable="true">
+            <button type="button" class="chip" data-value="Pet(s)" aria-pressed="false">Pet(s)</button>
+            <button type="button" class="chip" data-value="People" aria-pressed="false">People</button>
+            <button type="button" class="chip" data-value="Other Subjects" aria-pressed="false">Other Subjects</button>
+          </div>
+          <input type="hidden" id="subjects" name="subjects" value="" />
+        </div>
+
+        <div class="field">
+          <label class="field-label" for="style">Style preference <span class="req">(optional)</span></label>
+          <select id="style" name="style">
+            <option value="">Not sure yet…</option>
+            <option value="Rembrandt">Rembrandt</option>
+            <option value="Sargent">Sargent</option>
+            <option value="Van Gogh">Van Gogh</option>
+            <option value="Monet">Monet</option>
+            <option value="Other / open">Other / open</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label class="field-label" for="notes">Anything we should know? <span class="req">(optional)</span></label>
+          <textarea id="notes" name="notes" placeholder="Subject, size, timeline, or questions"></textarea>
+        </div>
+
+        <div class="consent" id="consentWrap">
+          <input id="consent" name="consent" type="checkbox" value="yes" required aria-required="true" />
+          <label for="consent">Yes, email me about commissioned Heirloom portraits and when artists are available. <span class="req">*</span></label>
+        </div>
+        <p class="error-msg" id="consentError" role="alert" style="margin-top:-14px;margin-bottom:16px"></p>
+
+        <button type="submit" class="cta" id="submitBtn">Register commission interest</button>
+      </form>
+
+      <p class="note"><a href="../">Back to Heirloom</a> · Soft-launch waitlist on the home page</p>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      var form = document.getElementById("commissionForm");
+      var chips = document.querySelectorAll("#subjectChips .chip");
+      var subjectsInput = document.getElementById("subjects");
+
+      chips.forEach(function (chip) {
+        chip.addEventListener("click", function () {
+          var on = chip.getAttribute("aria-pressed") === "true";
+          chip.setAttribute("aria-pressed", on ? "false" : "true");
+          syncSubjects();
+        });
+      });
+
+      function syncSubjects() {
+        var selected = [];
+        chips.forEach(function (c) {
+          if (c.getAttribute("aria-pressed") === "true") {
+            selected.push(c.getAttribute("data-value"));
+          }
+        });
+        subjectsInput.value = selected.join(", ");
+        return selected;
+      }
+
+      function clearError(id) {
+        var input = document.getElementById(id);
+        var err = document.getElementById(id + "Error");
+        if (input) input.classList.remove("invalid");
+        if (id === "consent") {
+          document.getElementById("consentWrap").classList.remove("invalid");
+        }
+        if (err) {
+          err.textContent = "";
+          err.classList.remove("show");
+        }
+      }
+
+      function showError(id, msg) {
+        var input = document.getElementById(id);
+        var err = document.getElementById(id + "Error");
+        if (input) input.classList.add("invalid");
+        if (id === "consent") {
+          document.getElementById("consentWrap").classList.add("invalid");
+        }
+        if (err) {
+          err.textContent = msg;
+          err.classList.add("show");
+        }
+      }
+
+      function isValidEmail(v) {
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+      }
+
+      ["email", "consent"].forEach(function (id) {
+        var el = document.getElementById(id);
+        if (!el) return;
+        el.addEventListener("input", function () { clearError(id); });
+        el.addEventListener("change", function () { clearError(id); });
+      });
+
+      (function setNext() {
+        var next = form.querySelector('input[name="_next"]');
+        if (!next) return;
+        try {
+          var u = new URL("../thank-you.html", window.location.href);
+          if (u.protocol === "http:" || u.protocol === "https:") {
+            next.value = u.href;
+          }
+        } catch (e) { /* keep production URL */ }
+      })();
+
+      form.addEventListener("submit", function (e) {
+        clearError("email");
+        clearError("consent");
+
+        var email = document.getElementById("email").value.trim();
+        var consent = document.getElementById("consent").checked;
+        syncSubjects();
+        var ok = true;
+
+        if (!email) {
+          showError("email", "Email is required.");
+          ok = false;
+        } else if (!isValidEmail(email)) {
+          showError("email", "Please enter a valid email.");
+          ok = false;
+        }
+        if (!consent) {
+          showError("consent", "Please check the box to receive updates.");
+          ok = false;
+        }
+        if (!ok) {
+          e.preventDefault();
+          var first = form.querySelector(".invalid, .consent.invalid");
+          if (first) (first.querySelector("input") || first).focus();
+          return;
+        }
+
+        document.getElementById("submitBtn").disabled = true;
+        document.getElementById("submitBtn").textContent = "Sending…";
+      });
+    })();
+  </script>
+</body>
+</html>
