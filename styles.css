@@ -1,0 +1,639 @@
+/* Heirloom marketing landing — Vince lock 2026-09-25
+   Blank cream + dog UR quarter brush-into-page + text XY-centered.
+   Offline / not published. */
+:root {
+  --cream: #F3EEE6;
+  --ink: #2B2A28;
+  --soft: #5C5852;
+  --line: #D4CDC2;
+  --error: #8B3A2F;
+  --mark: Optima, Candara, "Segoe UI", "Tenor Sans", sans-serif;
+  --sans: "Source Sans 3", system-ui, sans-serif;
+  --radius: 14px;
+  --pad: 22px;
+  --copy-max: 34rem;
+  --form-max: 560px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  height: 100%;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--sans);
+  background: var(--cream);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+  line-height: 1.5;
+  min-height: 100%;
+  min-height: 100dvh;
+}
+
+body.dialog-open { overflow: hidden; }
+
+img { max-width: 100%; height: auto; display: block; }
+a { color: var(--soft); }
+a:hover { color: var(--ink); }
+
+/* ——— Page shell: cream fill; dog floats UR; copy XY-centered ——— */
+.page {
+  position: relative;
+  min-height: 100dvh;
+  background: var(--cream);
+  overflow-x: clip;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Dog: hero image — painted soft alpha bleed (no oval CSS wash) */
+.hero-dog {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 1;
+  /* default / tablet: approaching upper-right half */
+  width: 50%;
+  height: 70vh;
+  pointer-events: none;
+  user-select: none;
+  transform: none;
+  display: flex;
+  justify-content: flex-end;
+  align-items: flex-start;
+}
+
+.hero-dog img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 80% 10%;
+  /* Soft alpha PNG/WebP already cuts into cream — no hard mask */
+}
+
+/* Stage: true viewport XY center for the copy stack */
+.stage {
+  position: relative;
+  z-index: 2;
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px var(--pad) 16px;
+  min-height: 0;
+}
+
+.copy {
+  text-align: center;
+  width: 100%;
+  max-width: var(--copy-max);
+  /* Keep readable when dog overlaps UR — soft text shadow only if needed */
+}
+
+.mark {
+  font-family: var(--mark);
+  font-weight: 400;
+  letter-spacing: 0.28em;
+  font-size: clamp(1.25rem, 3.2vw, 1.55rem);
+  text-align: center;
+  text-indent: 0.28em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+
+.tag {
+  text-align: center;
+  margin-top: 10px;
+  font-family: var(--mark);
+  font-weight: 400;
+  font-size: clamp(1.05rem, 2.6vw, 1.2rem);
+  color: var(--ink);
+}
+
+.flourish {
+  margin: 14px auto 0;
+  width: 72px;
+  height: 14px;
+  background: center / contain no-repeat
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 20' fill='none' stroke='%232b2a28' stroke-width='1.2'%3E%3Cpath d='M8 10 H48 M72 10 H112'/%3E%3Cpath d='M60 4c-4 4-4 8 0 12 4-4 4-8 0-12z'/%3E%3C/svg%3E");
+}
+
+.descriptor {
+  text-align: center;
+  color: var(--soft);
+  font-size: clamp(1rem, 2.2vw, 1.08rem);
+  margin-top: 16px;
+  max-width: 34ch;
+  margin-left: auto;
+  margin-right: auto;
+  line-height: 1.45;
+}
+
+.lede {
+  color: var(--soft);
+  font-size: clamp(1.02rem, 2.1vw, 1.08rem);
+  max-width: 42ch;
+  margin: 18px auto 24px;
+  line-height: 1.55;
+  text-align: center;
+}
+
+.cta-wrap {
+  margin: 0;
+  text-align: center;
+}
+
+.cta {
+  font-family: var(--sans);
+  font-size: 1.1rem;
+  font-weight: 600;
+  border: 0;
+  border-radius: var(--radius);
+  padding: 16px 28px;
+  cursor: pointer;
+  background: var(--ink);
+  color: #fff;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-width: 200px;
+  transition: opacity 0.15s, transform 0.1s;
+}
+
+.cta:hover { opacity: 0.92; color: #fff; }
+.cta:active { transform: scale(0.99); }
+.cta:disabled { opacity: 0.55; cursor: not-allowed; }
+.cta-block { width: 100%; }
+
+/* Footer secondary — does not compete with Join Waitlist */
+.site-footer {
+  position: relative;
+  z-index: 2;
+  flex: 0 0 auto;
+  margin-top: 0;
+  padding: 8px var(--pad) 24px;
+  text-align: center;
+  color: var(--soft);
+  font-size: 0.88rem;
+  line-height: 1.5;
+  width: 100%;
+  max-width: 40rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.site-footer .artists-note {
+  font-size: 0.84rem;
+  color: var(--soft);
+  opacity: 0.9;
+  max-width: 48ch;
+  margin: 0 auto 10px;
+}
+
+.site-footer .artists-note a {
+  color: var(--soft);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.site-footer .contact {
+  margin-top: 4px;
+}
+
+.site-footer .contact a {
+  color: var(--soft);
+  text-decoration: none;
+}
+
+.site-footer .timing {
+  margin-top: 6px;
+  font-size: 0.82rem;
+  opacity: 0.88;
+}
+
+/* ——— Form fields ——— */
+label.field-label,
+.field-label {
+  display: block;
+  font-size: 0.92rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: var(--ink);
+}
+
+.req { color: var(--soft); font-weight: 500; font-size: 0.85rem; }
+.hint { font-size: 0.85rem; color: var(--soft); margin: -2px 0 10px; font-weight: 500; }
+.field { margin-bottom: 18px; }
+
+input[type="text"],
+input[type="email"],
+select {
+  width: 100%;
+  font-family: inherit;
+  font-size: 1.1rem;
+  padding: 14px 16px;
+  border-radius: var(--radius);
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--ink);
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%235C5852' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 16px center;
+  padding-right: 40px;
+}
+
+input:focus, select:focus {
+  outline: none;
+  border-color: var(--ink);
+  box-shadow: 0 0 0 1px var(--ink);
+}
+
+input.invalid, .chips.invalid {
+  border-color: var(--error);
+  box-shadow: 0 0 0 1px var(--error);
+}
+
+.error-msg {
+  display: none;
+  color: var(--error);
+  font-size: 0.88rem;
+  margin-top: 6px;
+}
+.error-msg.show { display: block; }
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  padding: 2px;
+}
+
+.chip {
+  font-family: inherit;
+  font-size: 0.98rem;
+  font-weight: 500;
+  padding: 10px 16px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--ink);
+  cursor: pointer;
+  user-select: none;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+}
+
+.chip[aria-pressed="true"] {
+  background: var(--ink);
+  color: var(--cream);
+  border-color: var(--ink);
+}
+
+.chip:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+
+.yn { display: flex; gap: 8px; }
+.yn .chip { min-width: 72px; text-align: center; }
+
+.consent {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  margin: 6px 0 22px;
+  font-size: 0.95rem;
+  color: var(--soft);
+  line-height: 1.4;
+}
+
+.consent input {
+  width: 22px;
+  height: 22px;
+  margin-top: 1px;
+  flex-shrink: 0;
+  accent-color: var(--ink);
+}
+
+.consent.invalid label { color: var(--error); }
+
+.hp {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+/* ——— Waitlist dialog ——— */
+.waitlist-dialog {
+  border: none;
+  padding: 0;
+  background: transparent;
+  max-width: 100%;
+  max-height: 100%;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+}
+
+.waitlist-dialog::backdrop {
+  background: rgba(43, 42, 40, 0.48);
+}
+
+.waitlist-dialog.is-fallback-open {
+  display: flex;
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  align-items: stretch;
+  justify-content: center;
+  background: rgba(43, 42, 40, 0.48);
+}
+
+.waitlist-dialog[open] {
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+}
+
+.dialog-card {
+  position: relative;
+  background: var(--cream);
+  width: 100%;
+  max-width: 100%;
+  height: 100%;
+  max-height: 100dvh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 28px var(--pad) 36px;
+  box-shadow: 0 12px 40px rgba(43, 42, 40, 0.18);
+}
+
+.dialog-header {
+  text-align: center;
+  margin-bottom: 8px;
+}
+
+.dialog-mark { font-size: 1.15rem; }
+.dialog-tag { font-size: 1.05rem; }
+
+.dialog-lede {
+  text-align: center;
+  color: var(--soft);
+  font-size: 1rem;
+  margin: 14px auto 22px;
+  max-width: 36ch;
+  line-height: 1.5;
+}
+
+.dialog-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--ink);
+  font-size: 1.6rem;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dialog-close:hover { background: rgba(43, 42, 40, 0.08); }
+.dialog-close:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0,0,0,0);
+  border: 0;
+}
+
+/* ——— Thank-you page ——— */
+.thanks-page {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 40px var(--pad);
+  background: var(--cream);
+}
+
+.thanks-mark {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--ink);
+  color: var(--cream);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.6rem;
+  margin: 22px auto 22px;
+}
+
+.thanks-page h1 {
+  font-family: var(--mark);
+  font-weight: 400;
+  letter-spacing: 0.06em;
+  font-size: 1.55rem;
+  margin-bottom: 10px;
+}
+
+.thanks-page p {
+  color: var(--soft);
+  font-size: 1.05rem;
+  max-width: 32ch;
+  margin: 0 auto 28px;
+}
+
+.thanks-page .again {
+  background: transparent;
+  color: var(--soft);
+  border: 1px solid var(--line);
+  font-size: 0.95rem;
+  font-weight: 500;
+  padding: 12px 18px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-family: inherit;
+  text-decoration: none;
+  display: inline-block;
+}
+
+/* ——— Desktop ——— */
+@media (min-width: 900px) {
+  :root { --pad: 32px; }
+
+  .hero-dog {
+    /* Landscape: shrink previous hero 20% (still UR) */
+    width: 46.4%;
+    max-width: none;
+    height: 80vh;
+    max-height: none;
+  }
+
+  .hero-dog img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 78% 8%;
+    transform: scale(1.12);
+    transform-origin: top right;
+  }
+
+  .stage {
+    padding: 48px var(--pad) 24px;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .copy {
+    /* true page center — no full-stack mask */
+    position: relative;
+    z-index: 3;
+    max-width: var(--copy-max);
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
+    background: transparent;
+    padding: 0;
+    box-shadow: none;
+  }
+
+  .site-footer {
+    /* lift whole bottom block ~2 lines */
+    padding: 8px var(--pad) calc(24px + 2.7em);
+  }
+
+  .lede {
+    max-width: 42ch;
+    margin-top: 16px;
+    margin-bottom: 22px;
+    /* Hard 2px cream mask — landscape brush overlap only */
+    position: relative;
+    z-index: 4;
+    background: var(--cream);
+    padding: 2px;
+    box-shadow: none;
+    border-radius: 0;
+  }
+
+  .waitlist-dialog[open],
+  .waitlist-dialog.is-fallback-open {
+    align-items: center;
+    justify-content: center;
+    padding: 32px;
+  }
+
+  .dialog-card {
+    width: 100%;
+    max-width: 580px;
+    height: auto;
+    max-height: min(92dvh, 860px);
+    border-radius: 18px;
+    padding: 36px 32px 40px;
+  }
+}
+
+/* ——— Mobile: dog is top hero — most of the top of the screen ——— */
+@media (max-width: 699px) {
+  .hero-dog {
+    left: 0;
+    right: 0;
+    width: 100%;
+    max-width: none;
+    /* shorter plate so brush strokes meet the bottom edge */
+    height: 48vh;
+    max-height: none;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  .hero-dog img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 55% 18%;
+    transform: none;
+    transform-origin: top center;
+  }
+
+  .stage {
+    align-items: flex-start;
+    justify-content: center;
+    /* wordmark 4px below hero/brush bottom */
+    padding: calc(48vh + 4px) var(--pad) 24px;
+  }
+
+  .copy {
+    transform: none;
+    max-width: 22rem;
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
+    width: 100%;
+  }
+
+  .cta-wrap {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+  }
+
+  .cta {
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .lede {
+    max-width: 40ch;
+    font-size: 0.98rem;
+    margin-top: 12px;
+    margin-bottom: 16px;
+  }
+
+  .site-footer {
+    padding-bottom: 22px;
+  }
+}
+
+@media (max-width: 399px) {
+  .hero-dog {
+    height: 46vh;
+  }
+
+  .stage {
+    padding-top: calc(46vh + 4px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+}

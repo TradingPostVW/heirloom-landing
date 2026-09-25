@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="robots" content="index, follow" />
+  <meta name="description" content="Heirloom — Keep your loved ones close. Portraits for pets, their people, and the things they love most. Soft-launch waitlist." />
+  <meta property="og:title" content="Heirloom — Keep your loved ones close." />
+  <meta property="og:description" content="Portraits for pets, their people, and the things they love most. Soft-launch waitlist." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://heirloomportraits.love/" />
+  <meta property="og:image" content="https://heirloomportraits.love/img/hero-dog.png" />
+  <title>Heirloom — Keep your loved ones close.</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600;700&family=Tenor+Sans&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="page">
+    <aside class="hero-dog" aria-hidden="true">
+      <picture>
+        <source type="image/webp" srcset="img/hero-dog.webp" />
+        <img
+          src="img/hero-dog.png"
+          width="900"
+          height="964"
+          alt=""
+          fetchpriority="high"
+          decoding="async"
+        />
+      </picture>
+    </aside>
+
+    <div class="stage">
+      <header class="copy">
+        <div class="mark">HEIRLOOM</div>
+        <p class="tag">Keep your loved ones close.</p>
+        <div class="flourish" aria-hidden="true"></div>
+        <p class="descriptor">Portraits for pets, their people, and the things they love most.</p>
+        <p class="lede">Soft launch is nearly here! Turn your treasured photos into stylized Heirloom canvas portraits, keepsake magnets, or download your own high resolution print-ready files. Join our waitlist and receive a 20% discount on your first order when we launch!</p>
+        <p class="cta-wrap">
+          <button type="button" class="cta" id="openWaitlist" aria-haspopup="dialog" aria-controls="waitlistDialog">Join Waitlist</button>
+        </p>
+      </header>
+    </div>
+
+    <footer class="site-footer">
+      <p class="artists-note">Interested in a commissioned work by an experienced portrait artist? <a href="mailto:hello@heirloomportraits.love?subject=Heirloom%20commission%20interest">Click here to fill out an interest form</a> and we’ll let you know when we launch!</p>
+      <p class="contact"><a href="mailto:hello@heirloomportraits.love">hello@heirloomportraits.love</a></p>
+    </footer>
+  </div>
+
+  <dialog id="waitlistDialog" class="waitlist-dialog" aria-labelledby="waitlistHeading">
+    <div class="dialog-card">
+      <button type="button" class="dialog-close" id="closeWaitlist" aria-label="Close waitlist form">&times;</button>
+      <div class="dialog-header">
+        <div class="mark dialog-mark">HEIRLOOM</div>
+        <p class="tag dialog-tag">Keep your loved ones close.</p>
+        <div class="flourish" aria-hidden="true"></div>
+        <h2 id="waitlistHeading" class="visually-hidden">Waitlist</h2>
+        <p class="dialog-lede" id="waitlistLede">Join the waitlist for 20% off your first order when Heirloom launches.</p>
+      </div>
+
+      <form
+        id="interestForm"
+        action="https://formsubmit.co/hello@heirloomportraits.love"
+        method="POST"
+        novalidate
+      >
+        <input type="hidden" name="_subject" value="Heirloom waitlist" />
+        <input type="hidden" name="_captcha" value="false" />
+        <input type="hidden" name="_template" value="table" />
+        <input type="hidden" name="_next" value="https://heirloomportraits.love/thank-you.html" />
+        <input type="text" name="_honey" value="" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true" />
+
+        <div class="field">
+          <label class="field-label" for="name">Name</label>
+          <input id="name" name="name" type="text" autocomplete="name" placeholder="Your name" />
+          <p class="error-msg" id="nameError" role="alert"></p>
+        </div>
+
+        <div class="field">
+          <label class="field-label" for="email">Email <span class="req">*</span></label>
+          <input id="email" name="email" type="email" inputmode="email" autocomplete="email" required placeholder="you@email.com" aria-required="true" />
+          <p class="error-msg" id="emailError" role="alert"></p>
+        </div>
+
+        <div class="field">
+          <label class="field-label" for="location">Zip or city <span class="req">(optional)</span></label>
+          <input id="location" name="location" type="text" autocomplete="postal-code" placeholder="e.g. Kingston Springs or 37082" />
+        </div>
+
+        <div class="field">
+          <span class="field-label" id="interestsLabel">I’m interested in an Heirloom portrait of my:</span>
+          <p class="hint" id="interestsHint">Select all that apply</p>
+          <div class="chips" id="interestChips" role="group" aria-labelledby="interestsLabel" aria-describedby="interestsHint" aria-multiselectable="true">
+            <button type="button" class="chip" data-value="Pet(s)" aria-pressed="false">Pet(s)</button>
+            <button type="button" class="chip" data-value="People" aria-pressed="false">People</button>
+            <button type="button" class="chip" data-value="Other Subjects" aria-pressed="false">Other Subjects</button>
+          </div>
+          <input type="hidden" id="interests" name="interests" value="" />
+          <p class="error-msg" id="interestsError" role="alert"></p>
+        </div>
+
+        <div class="field">
+          <span class="field-label" id="boothLabel">I’d like to drop by the Heirloom booth at a local event.</span>
+          <div class="chips yn" id="boothChips" role="radiogroup" aria-labelledby="boothLabel">
+            <button type="button" class="chip" data-value="Yes" aria-pressed="false">Yes</button>
+            <button type="button" class="chip" data-value="No" aria-pressed="false">No</button>
+          </div>
+          <input type="hidden" id="booth" name="booth" value="" />
+        </div>
+
+        <div class="field">
+          <label class="field-label" for="heard">How did you hear about us? <span class="req">(optional)</span></label>
+          <select id="heard" name="heard">
+            <option value="">Choose one…</option>
+            <option value="Friend">Friend or family</option>
+            <option value="Instagram">Instagram</option>
+            <option value="Facebook">Facebook</option>
+            <option value="Local">Local event / booth</option>
+            <option value="Search">Search</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+
+        <div class="consent" id="consentWrap">
+          <input id="consent" name="consent" type="checkbox" value="yes" required aria-required="true" />
+          <label for="consent">Yes, email me updates about Heirloom (soft launch, booth days, and when Heirloom is live). <span class="req">*</span></label>
+        </div>
+        <p class="error-msg" id="consentError" role="alert" style="margin-top:-14px;margin-bottom:16px"></p>
+
+        <button type="submit" class="cta cta-block" id="submitBtn">Save my spot</button>
+      </form>
+    </div>
+  </dialog>
+
+  <script>
+    (function () {
+      var dialog = document.getElementById("waitlistDialog");
+      var openBtn = document.getElementById("openWaitlist");
+      var closeBtn = document.getElementById("closeWaitlist");
+      var lastFocus = null;
+
+      function focusableIn(root) {
+        return Array.prototype.slice.call(
+          root.querySelectorAll(
+            'a[href], button:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+          )
+        ).filter(function (el) {
+          return el.offsetParent !== null || el === document.activeElement || el.getClientRects().length;
+        });
+      }
+
+      function openDialog() {
+        lastFocus = document.activeElement;
+        if (typeof dialog.showModal === "function") {
+          dialog.showModal();
+        } else {
+          dialog.setAttribute("open", "");
+          dialog.classList.add("is-fallback-open");
+        }
+        document.body.classList.add("dialog-open");
+        var name = document.getElementById("name");
+        var target = name || closeBtn;
+        if (target && typeof target.focus === "function") {
+          setTimeout(function () { target.focus(); }, 30);
+        }
+      }
+
+      function closeDialog() {
+        if (typeof dialog.close === "function" && dialog.open) {
+          dialog.close();
+        } else {
+          dialog.removeAttribute("open");
+          dialog.classList.remove("is-fallback-open");
+        }
+        document.body.classList.remove("dialog-open");
+        if (lastFocus && typeof lastFocus.focus === "function") {
+          lastFocus.focus();
+        } else if (openBtn) {
+          openBtn.focus();
+        }
+      }
+
+      openBtn.addEventListener("click", openDialog);
+      closeBtn.addEventListener("click", closeDialog);
+
+      dialog.addEventListener("click", function (e) {
+        if (e.target === dialog) closeDialog();
+      });
+
+      dialog.addEventListener("cancel", function (e) {
+        e.preventDefault();
+        closeDialog();
+      });
+
+      dialog.addEventListener("keydown", function (e) {
+        if (e.key !== "Tab") return;
+        var nodes = focusableIn(dialog);
+        if (!nodes.length) return;
+        var first = nodes[0];
+        var last = nodes[nodes.length - 1];
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      });
+
+      var form = document.getElementById("interestForm");
+      var chips = document.querySelectorAll("#interestChips .chip");
+      var boothChips = document.querySelectorAll("#boothChips .chip");
+      var interestsInput = document.getElementById("interests");
+      var boothInput = document.getElementById("booth");
+
+      chips.forEach(function (chip) {
+        chip.addEventListener("click", function () {
+          var on = chip.getAttribute("aria-pressed") === "true";
+          chip.setAttribute("aria-pressed", on ? "false" : "true");
+          syncInterests();
+          clearError("interests");
+        });
+      });
+
+      boothChips.forEach(function (chip) {
+        chip.addEventListener("click", function () {
+          boothChips.forEach(function (c) { c.setAttribute("aria-pressed", "false"); });
+          chip.setAttribute("aria-pressed", "true");
+          boothInput.value = chip.getAttribute("data-value");
+        });
+      });
+
+      function syncInterests() {
+        var selected = [];
+        chips.forEach(function (c) {
+          if (c.getAttribute("aria-pressed") === "true") {
+            selected.push(c.getAttribute("data-value"));
+          }
+        });
+        interestsInput.value = selected.join(", ");
+        return selected;
+      }
+
+      function clearError(id) {
+        var input = document.getElementById(id);
+        var err = document.getElementById(id + "Error");
+        if (input) input.classList.remove("invalid");
+        if (id === "interests") {
+          document.getElementById("interestChips").classList.remove("invalid");
+        }
+        if (id === "consent") {
+          document.getElementById("consentWrap").classList.remove("invalid");
+        }
+        if (err) {
+          err.textContent = "";
+          err.classList.remove("show");
+        }
+      }
+
+      function showError(id, msg) {
+        var input = document.getElementById(id);
+        var err = document.getElementById(id + "Error");
+        if (input) input.classList.add("invalid");
+        if (id === "interests") {
+          document.getElementById("interestChips").classList.add("invalid");
+        }
+        if (id === "consent") {
+          document.getElementById("consentWrap").classList.add("invalid");
+        }
+        if (err) {
+          err.textContent = msg;
+          err.classList.add("show");
+        }
+      }
+
+      function isValidEmail(v) {
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+      }
+
+      ["email", "name", "consent"].forEach(function (id) {
+        var el = document.getElementById(id);
+        if (!el) return;
+        el.addEventListener("input", function () { clearError(id); });
+        el.addEventListener("change", function () { clearError(id); });
+      });
+
+      (function setNext() {
+        var next = form.querySelector('input[name="_next"]');
+        if (!next) return;
+        try {
+          var u = new URL("thank-you.html", window.location.href);
+          if (u.protocol === "http:" || u.protocol === "https:") {
+            next.value = u.href;
+          }
+        } catch (e) { /* keep production URL */ }
+      })();
+
+      form.addEventListener("submit", function (e) {
+        clearError("email");
+        clearError("name");
+        clearError("interests");
+        clearError("consent");
+
+        var email = document.getElementById("email").value.trim();
+        var consent = document.getElementById("consent").checked;
+        syncInterests();
+        var ok = true;
+
+        if (!email) {
+          showError("email", "Email is required.");
+          ok = false;
+        } else if (!isValidEmail(email)) {
+          showError("email", "Please enter a valid email.");
+          ok = false;
+        }
+        if (!consent) {
+          showError("consent", "Please check the box to receive updates.");
+          ok = false;
+        }
+        if (!ok) {
+          e.preventDefault();
+          var first = form.querySelector(".invalid, .consent.invalid");
+          if (first) (first.querySelector("input") || first).focus();
+          return;
+        }
+
+        document.getElementById("submitBtn").disabled = true;
+        document.getElementById("submitBtn").textContent = "Saving…";
+      });
+    })();
+  </script>
+
+<script>
+(function(){
+  var q = new URLSearchParams(location.search);
+  if (q.get('open') !== '1') return;
+  function go(){
+    var dialog = document.getElementById('waitlistDialog');
+    if (dialog && typeof dialog.showModal === 'function') dialog.showModal();
+    else document.getElementById('openWaitlist') && document.getElementById('openWaitlist').click();
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', go);
+  else go();
+})();
+</script>
+
+</body>
+</html>
