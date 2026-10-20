@@ -188,17 +188,20 @@
   <style id="ba-css">
     /* SAMPLES before/after, alternate B (Vince pick 2026-10-20 10:36 AM CT): tap or hold the painting to see the original photo. */
     .sd-slide img { -webkit-touch-callout:none; }
-    .sd-slide img.ba-before { display:none; }
-    .sd-slide.show-before img.ba-before { display:block; animation:baIn .28s ease-out; }
-    .sd-slide.show-before img.ba-after { display:none; }
+    /* v2 (Vince 12:21 PM): painting box identical to v3. The painting stays in the flex flow (hidden, never removed) and the
+       photo is laid over exactly the painting's box (object-fit:contain), so nothing moves when it flips or peeks. */
+    .v-B .sd-slide img.ba-before { position:absolute; display:none; max-width:none; max-height:none; object-fit:contain; }
+    .v-B .sd-slide.show-before img.ba-before.is-placed { display:block; animation:baIn .28s ease-out; }
+    .sd-slide.show-before img.ba-after { visibility:hidden; }
     .sd-slide.ba-swapped img.ba-after { animation:baIn .28s ease-out; }
     @keyframes baIn { from { opacity:0; } to { opacity:1; } }
-    .v-B .sd-slide { padding-bottom:212px; }                     /* room for the hint line */
-    @media (max-width:899px) { .v-B .sd-slide { padding-bottom:224px; } }
-    .sd-caption { flex:1 1 auto; min-width:0; }
-    .ba-hint { display:flex; align-items:center; min-height:48px; margin:-6px 0 4px; padding:0; cursor:pointer;
-      font:400 18px/1.25 var(--sans); color:var(--cream); background:none; border:0; text-align:left;
-      text-decoration:underline; text-underline-offset:4px; text-decoration-thickness:1px; }
+    /* Hint ABOVE the artist label, absolutely positioned in the caption bar's existing top padding: the bar, caption row,
+       scrim and image box keep their v3 sizes. 48px tap target; the text sits on the target's bottom edge, 8px into the
+       caption row's empty top (the 22px label is centred in the 48px row). */
+    .sd-caption-row { position:relative; }
+    .ba-hint { position:absolute; left:0; bottom:calc(100% - 8px); height:48px; display:flex; align-items:flex-end; padding:0; margin:0; cursor:pointer;
+      font:400 18px/1.1 var(--sans); color:var(--cream); background:none; border:0; text-align:left; white-space:nowrap;
+      text-decoration:underline; text-underline-offset:3px; text-decoration-thickness:1px; }
     .ba-hint:focus-visible { outline:3px solid var(--ochre); outline-offset:2px; }
     @media (prefers-reduced-motion: reduce) { .sd-slide.show-before img.ba-before, .sd-slide.ba-swapped img.ba-after { animation:none; } }
   </style>
@@ -558,13 +561,13 @@
     </div>
     <div class="sd-bottom">
       <div class="sd-caption-row">
+        <button type="button" class="ba-hint" id="baHint" aria-pressed="false" aria-controls="sdSlides">Tap to see the original photo</button>
         <p class="sd-caption" id="sdCaption" aria-live="off"></p>
         <span class="sd-cap-right">
           <span class="sd-count" id="sdCount" aria-hidden="true"></span>
           <button type="button" class="sd-btn sd-zoom-btn" id="sdZoomBtn" aria-label="Enlarge painting" aria-haspopup="dialog" aria-controls="sdZoom"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 21 21"/><path d="M10.5 7.5v6M7.5 10.5h6"/></svg></button>
         </span>
       </div>
-      <button type="button" class="ba-hint" id="baHint" aria-pressed="false" aria-controls="sdSlides">Tap to see the original photo</button>
       <div class="sd-progress" aria-hidden="true"><i id="sdProg"></i></div>
       <div class="sd-controls">
         <button type="button" class="sd-btn" id="sdPrev" aria-label="Previous painting"><svg viewBox="0 0 24 24"><path d="M15.4 4.6 8 12l7.4 7.4 1.4-1.4-6-6 6-6z"/></svg></button>
@@ -688,6 +691,7 @@
       bimg.className = "ba-before"; bimg.alt = "The original photo of " + s.who + ", before painting";
       bimg.decoding = "async"; bimg.dataset.src = s.before; bimg.draggable = false;
       f.appendChild(bimg); slidesEl.appendChild(f);
+      img.addEventListener("load", function () { placePhoto(f); });
       return f;
     });
 
@@ -702,11 +706,18 @@
     }
     function setBefore(b, user) {
       if (user) cancelPeek();
-      showBefore = !!b; var f = slides[idx];
+      showBefore = !!b; var f = slides[idx]; placePhoto(f);
       f.classList.toggle("show-before", showBefore); f.classList.toggle("ba-swapped", !showBefore);
       renderLabels();
       if (user && !paused) setPaused(true);
       if (user) live.textContent = showBefore ? "Showing the original photo. Slideshow paused." : "Showing the painting, in the style of " + SAMPLES[idx].artist + ". Slideshow paused.";
+    }
+    function placePhoto(f) {          // lay the photo exactly over the painting's box (painting stays in flow)
+      f = f || slides[idx]; var a = f.querySelector("img.ba-after"), b = f.querySelector("img.ba-before");
+      if (!a.complete || !a.naturalWidth) { b.classList.remove("is-placed"); return; }
+      var ra = a.getBoundingClientRect(), rf = f.getBoundingClientRect();   // sub-pixel exact, relative to the slide
+      b.style.left = (ra.left - rf.left) + "px"; b.style.top = (ra.top - rf.top) + "px"; b.style.width = ra.width + "px"; b.style.height = ra.height + "px";
+      b.classList.add("is-placed");
     }
     function cancelPeek() { clearTimeout(peekT1); clearTimeout(peekT2); peekT1 = peekT2 = null; }
     function startPeek() {
@@ -722,6 +733,7 @@
       }, PEEK_AT);
     }
     hint.addEventListener("click", function () { setBefore(!showBefore, true); });
+    window.addEventListener("resize", function () { slides.forEach(function (f) { placePhoto(f); }); });
 
     function load(i) { slides[i].querySelectorAll("img[data-src]").forEach(function (im) { if (!im.getAttribute("src")) im.src = im.dataset.src; }); }
     function dur() { return reduce.matches ? DUR_RM : DUR; }
