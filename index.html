@@ -184,6 +184,24 @@
       html.col-wide .copy .lede { max-width:var(--wide-w, 26em); text-wrap:balance; }
     }
   </style>
+
+  <style id="ba-css">
+    /* SAMPLES before/after, alternate B (Vince pick 2026-10-20 10:36 AM CT): tap or hold the painting to see the original photo. */
+    .sd-slide img { -webkit-touch-callout:none; }
+    .sd-slide img.ba-before { display:none; }
+    .sd-slide.show-before img.ba-before { display:block; animation:baIn .28s ease-out; }
+    .sd-slide.show-before img.ba-after { display:none; }
+    .sd-slide.ba-swapped img.ba-after { animation:baIn .28s ease-out; }
+    @keyframes baIn { from { opacity:0; } to { opacity:1; } }
+    .v-B .sd-slide { padding-bottom:212px; }                     /* room for the hint line */
+    @media (max-width:899px) { .v-B .sd-slide { padding-bottom:224px; } }
+    .sd-caption { flex:1 1 auto; min-width:0; }
+    .ba-hint { display:flex; align-items:center; min-height:48px; margin:-6px 0 4px; padding:0; cursor:pointer;
+      font:400 18px/1.25 var(--sans); color:var(--cream); background:none; border:0; text-align:left;
+      text-decoration:underline; text-underline-offset:4px; text-decoration-thickness:1px; }
+    .ba-hint:focus-visible { outline:3px solid var(--ochre); outline-offset:2px; }
+    @media (prefers-reduced-motion: reduce) { .sd-slide.show-before img.ba-before, .sd-slide.ba-swapped img.ba-after { animation:none; } }
+  </style>
   <script>
     /* Locked v3 desktop column: wide0 (no URL switch). */
     (function () { var el = document.documentElement;
@@ -546,6 +564,7 @@
           <button type="button" class="sd-btn sd-zoom-btn" id="sdZoomBtn" aria-label="Enlarge painting" aria-haspopup="dialog" aria-controls="sdZoom"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 21 21"/><path d="M10.5 7.5v6M7.5 10.5h6"/></svg></button>
         </span>
       </div>
+      <button type="button" class="ba-hint" id="baHint" aria-pressed="false" aria-controls="sdSlides">Tap to see the original photo</button>
       <div class="sd-progress" aria-hidden="true"><i id="sdProg"></i></div>
       <div class="sd-controls">
         <button type="button" class="sd-btn" id="sdPrev" aria-label="Previous painting"><svg viewBox="0 0 24 24"><path d="M15.4 4.6 8 12l7.4 7.4 1.4-1.4-6-6 6-6z"/></svg></button>
@@ -627,6 +646,7 @@
   <script id="samples-drawer-js">
   (function () {
     "use strict";
+    // Befores: the matching Oct 17 booth slideshow NN-a-photo.jpg (EXIF stripped). Same 9 rights-cleared pairs only.
     // Rights-cleared paintings from the Oct 17 booth slideshow (pairs 1,2,3,4,8,9,11,12,13).
     // Excluded: 5 green chair cat, 6 pink chair cat (Dreamstime), 7 Papillon (boat issues), 10 red fox dog.
     var SAMPLES = [
@@ -661,13 +681,49 @@
       img.alt = "Sample Heirloom portrait of " + s.who + ", painted in the style of " + s.artist;
       img.decoding = "async"; img.dataset.src = s.src; img.draggable = false;
       s.full = s.src.replace("samples/", "samples/full/");
-      f.appendChild(img); slidesEl.appendChild(f);
+      s.before = s.src.replace("samples/", "samples/before/");
+      s.beforeFull = s.src.replace("samples/", "samples/before/full/");
+      img.className = "ba-after"; f.appendChild(img);
+      var bimg = document.createElement("img");
+      bimg.className = "ba-before"; bimg.alt = "The original photo of " + s.who + ", before painting";
+      bimg.decoding = "async"; bimg.dataset.src = s.before; bimg.draggable = false;
+      f.appendChild(bimg); slidesEl.appendChild(f);
       return f;
     });
 
     var idx = 0, open = false, paused = false, timer = null;
+    var showBefore = false, hint = document.getElementById("baHint");
+    var peekDone = false, peekT1 = null, peekT2 = null;   // one-time auto-flip peek on slide 1, once per page load
+    var PEEK_AT = 1200, PEEK_HOLD = 1800;
+    function renderLabels() {
+      cap.textContent = showBefore ? "The original photo" : "In the style of " + SAMPLES[idx].artist;
+      hint.textContent = showBefore ? "Tap to see the painting" : "Tap to see the original photo";
+      hint.setAttribute("aria-pressed", showBefore ? "true" : "false");
+    }
+    function setBefore(b, user) {
+      if (user) cancelPeek();
+      showBefore = !!b; var f = slides[idx];
+      f.classList.toggle("show-before", showBefore); f.classList.toggle("ba-swapped", !showBefore);
+      renderLabels();
+      if (user && !paused) setPaused(true);
+      if (user) live.textContent = showBefore ? "Showing the original photo. Slideshow paused." : "Showing the painting, in the style of " + SAMPLES[idx].artist + ". Slideshow paused.";
+    }
+    function cancelPeek() { clearTimeout(peekT1); clearTimeout(peekT2); peekT1 = peekT2 = null; }
+    function startPeek() {
+      if (peekDone) return; peekDone = true;                     // once per page load, even if skipped
+      if (reduce.matches || idx !== 0) return;                   // never with reduced motion, never on later slides
+      peekT1 = setTimeout(function () {
+        peekT1 = null; if (!open || idx !== 0 || showBefore) return;
+        setBefore(true, false); document.getElementById("sdDrawer").setAttribute("data-peek", "photo");
+        peekT2 = setTimeout(function () {
+          peekT2 = null; document.getElementById("sdDrawer").setAttribute("data-peek", "done");
+          if (open && idx === 0 && showBefore) setBefore(false, false);
+        }, PEEK_HOLD);
+      }, PEEK_AT);
+    }
+    hint.addEventListener("click", function () { setBefore(!showBefore, true); });
 
-    function load(i) { var im = slides[i].querySelector("img"); if (!im.src) im.src = im.dataset.src; }
+    function load(i) { slides[i].querySelectorAll("img[data-src]").forEach(function (im) { if (!im.getAttribute("src")) im.src = im.dataset.src; }); }
     function dur() { return reduce.matches ? DUR_RM : DUR; }
     function autoOn() { return open && !paused && !reduce.matches; }
 
@@ -685,7 +741,9 @@
       idx = (i + slides.length) % slides.length;
       slides.forEach(function (s, k) { s.classList.toggle("is-on", k === idx); s.setAttribute("aria-hidden", k === idx ? "false" : "true"); });
       load(idx); load((idx + 1) % slides.length);
-      cap.textContent = "In the style of " + SAMPLES[idx].artist;
+      if (idx !== 0) cancelPeek();
+      slides.forEach(function (s) { s.classList.remove("show-before", "ba-swapped"); });
+      showBefore = false; renderLabels();
       count.textContent = (idx + 1) + " / " + slides.length;
       if (announce) live.textContent = "Painting " + (idx + 1) + " of " + slides.length + ", in the style of " + SAMPLES[idx].artist;
       schedule();
@@ -722,12 +780,14 @@
       // Reduced motion: no slide, no auto-advance (start paused; Play advances at 12s).
       setPaused(reduce.matches);
       show(idx, false);
+      startPeek();
       setTimeout(function () { btnClose.focus(); }, reduce.matches ? 0 : 80);
     }
     function closeDrawer(how, after) {
       if (!open) return;
       if (zoomOpen) closeZoom(true);
       open = false; clearTimeout(timer); prog.classList.remove("run");
+      cancelPeek(); if (showBefore) setBefore(false, false);
       var ms = reduce.matches ? 0 : 650;
       if (how === "swipe" && !reduce.matches) {
         drawer.classList.add("exit-right");               // follows the finger off to the right
@@ -791,20 +851,30 @@
 
     // Swipe left = next painting, swipe right = close. Tap on the painting = pause / play.
     var sx = 0, sy = 0, st = 0, tracking = false;
+    var holdT = null, held = false;
     drawer.addEventListener("pointerdown", function (e) {
       if (e.target.closest("button") || zoomOpen) return;
-      tracking = true; sx = e.clientX; sy = e.clientY; st = Date.now();
+      tracking = true; sx = e.clientX; sy = e.clientY; st = Date.now(); held = false;
+      if (e.target.closest(".sd-slide img")) {                  // press-and-hold shows the photo while held
+        clearTimeout(holdT); holdT = setTimeout(function () { if (!tracking) return; held = true; setBefore(true, true); }, 380);
+      }
     });
+    drawer.addEventListener("pointermove", function (e) {
+      if (holdT && tracking && (Math.abs(e.clientX - sx) > 12 || Math.abs(e.clientY - sy) > 12)) { clearTimeout(holdT); holdT = null; }
+    });
+    drawer.addEventListener("contextmenu", function (e) { if (e.target.closest(".sd-slide")) e.preventDefault(); });
     drawer.addEventListener("pointerup", function (e) {
-      if (!tracking) return; tracking = false;
+      if (!tracking) return; tracking = false; clearTimeout(holdT); holdT = null;
+      if (held) { held = false; setBefore(false, true); return; }
       var dx = e.clientX - sx, dy = e.clientY - sy;
       if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.3) {
         if (dx > 0) closeDrawer("swipe"); else show(idx + 1, true);
       } else if (Math.abs(dx) < 12 && Math.abs(dy) < 12 && Date.now() - st < 600) {
-        setPaused(!paused);
+        if (e.target.closest(".sd-slide img")) setBefore(!showBefore, true);   // tap the picture flips
+        else setPaused(!paused);
       }
     });
-    drawer.addEventListener("pointercancel", function () { tracking = false; });
+    drawer.addEventListener("pointercancel", function () { tracking = false; clearTimeout(holdT); holdT = null; if (held) { held = false; setBefore(false, true); } });
 
     // ——— Zoom view: magnifier is the only way in ———
     var zoomEl = document.getElementById("sdZoom"), zStage = document.getElementById("sdZoomStage");
@@ -840,15 +910,16 @@
       if (!open || zoomOpen) return;
       setPaused(true);
       zoomOpen = true;
-      var s = SAMPLES[idx];
-      zImg.alt = "Enlarged: " + slides[idx].querySelector("img").alt;
+      var s = SAMPLES[idx], zb = showBefore;
+      cancelPeek();                                               // keep whatever is showing while zoomed
+      zImg.alt = "Enlarged: " + slides[idx].querySelector(zb ? "img.ba-before" : "img.ba-after").alt;
       zImg.onload = fitZ;
-      zImg.src = s.full;
+      zImg.src = zb ? s.beforeFull : s.full;
       if (zImg.complete && zImg.naturalWidth) fitZ();
       zHint.textContent = coarse.matches ? "Pinch or double-tap to zoom · drag to move" : "Scroll or click to zoom · drag to move";
       zoomEl.classList.add("is-open"); zoomEl.setAttribute("aria-hidden", "false");
       zBtn.setAttribute("aria-expanded", "true");
-      live.textContent = "Enlarged painting, in the style of " + s.artist + ". Press Escape or Close to return.";
+      live.textContent = (zb ? "Enlarged original photo" : "Enlarged painting, in the style of " + s.artist) + ". Press Escape or Close to return.";
       setTimeout(function () { zClose.focus(); }, 0);
     }
     function closeZoom(silent) {
