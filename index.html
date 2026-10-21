@@ -649,17 +649,30 @@
   <script id="samples-drawer-js">
   (function () {
     "use strict";
-    // Befores: the matching Oct 17 booth slideshow NN-a-photo.jpg (EXIF stripped). Same 9 rights-cleared pairs only.
-    // Rights-cleared paintings from the Oct 17 booth slideshow (pairs 1,2,3,4,8,9,11,12,13).
-    // Excluded: 5 green chair cat, 6 pink chair cat (Dreamstime), 7 Papillon (boat issues), 10 red fox dog.
+    // Befores: the matching Oct 17 booth slideshow NN-a-photo.jpg (EXIF stripped) for pairs 1-13; for 14-23 a crop of the untouched
+    // original photo matching the painting frame (explore/2026-10-21-samples-merge/tools/build_log.json).
+    // Merged slideshow preview (Vince 2026-10-21 2:38 PM CT): the 9 live pairs + 10 held paintings from assets/slideshow-hold/;
+    // pair 9 red dancer painting replaced by red-dancer-delacroix-formalB-final (same before photo).
+    // Excluded: 5 green chair cat, 6 pink chair cat (Dreamstime), 7 Papillon (boat issues), 10 red fox dog; Renoir family (no consent);
+    // Monet girl (no approved version yet); Sargent tree-line alternate; superseded/ files.
     var SAMPLES = [
       { pair: 4,  src: "samples/04-rembrandt.jpg", artist: "Rembrandt", who: "Penn" },
       { pair: 2,  src: "samples/02-fragonard.jpg", artist: "Fragonard", who: "Pepa" },
       { pair: 9,  src: "samples/09-delacroix.jpg", artist: "Delacroix", who: "a dancer in a red dress" },
+      { pair: 18, src: "samples/18-leonardo.jpg",  artist: "Leonardo",  who: "a grey tabby cat" },
       { pair: 1,  src: "samples/01-gericault.jpg", artist: "Géricault", who: "Pepa" },
+      { pair: 21, src: "samples/21-turner.jpg",    artist: "Turner",    who: "a cormorant drying its wings" },
       { pair: 8,  src: "samples/08-vangogh.jpg",   artist: "Van Gogh",  who: "Theo" },
+      { pair: 20, src: "samples/20-sargent.jpg",   artist: "Sargent",   who: "a woman leading her horse" },
+      { pair: 17, src: "samples/17-gauguin.jpg",   artist: "Gauguin",   who: "a black dog" },
       { pair: 12, src: "samples/12-rembrandt.jpg", artist: "Rembrandt", who: "Lucy" },
+      { pair: 16, src: "samples/16-degas.jpg",     artist: "Degas",     who: "a white horse" },
+      { pair: 22, src: "samples/22-fragonard.jpg", artist: "Fragonard", who: "a vase of flowers with tomatoes" },
+      { pair: 23, src: "samples/23-wyeth.jpg",     artist: "Wyeth",     who: "an orange tabby cat" },
+      { pair: 15, src: "samples/15-david.jpg",     artist: "David",     who: "a grey roan horse" },
       { pair: 3,  src: "samples/03-fragonard.jpg", artist: "Fragonard", who: "Tia and Pepa" },
+      { pair: 19, src: "samples/19-homer.jpg",     artist: "Homer",     who: "a red ridgeback" },
+      { pair: 14, src: "samples/14-delacroix.jpg", artist: "Delacroix", who: "a woman in a flowing cape" },
       { pair: 13, src: "samples/13-gericault.jpg", artist: "Géricault", who: "Sal and his horse" },
       { pair: 11, src: "samples/11-rembrandt.jpg", artist: "Rembrandt", who: "Sven" }
     ];
