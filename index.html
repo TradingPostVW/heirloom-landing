@@ -203,6 +203,13 @@
       font:400 18px/1.1 var(--sans); color:var(--cream); background:none; border:0; text-align:left; white-space:nowrap;
       text-decoration:underline; text-underline-offset:3px; text-decoration-thickness:1px; }
     .ba-hint:focus-visible { outline:3px solid var(--ochre); outline-offset:2px; }
+    /* Unsplash photographer credit: photo state only, inside the photo's bottom-right corner (no layout effect). */
+    .ba-credit { position:absolute; display:none; z-index:2; padding:2px 6px; font:400 12px/1.3 var(--sans); color:rgba(255,250,240,.9);
+      background:rgba(0,0,0,.42); border-radius:3px; text-decoration:none; white-space:nowrap; }
+    .ba-credit:hover, .ba-credit:focus-visible { text-decoration:underline; outline:2px solid var(--ochre); outline-offset:1px; }
+    .v-B .sd-slide.show-before .ba-credit.is-placed { display:block; animation:baIn .28s ease-out; }
+    /* Hidden (opacity 0) slides sit above the current one in DOM order; let taps reach the current slide so its credit link works. */
+    .sd-slide:not(.is-on) { pointer-events:none; }
     @media (prefers-reduced-motion: reduce) { .sd-slide.show-before img.ba-before, .sd-slide.ba-swapped img.ba-after { animation:none; } }
   </style>
   <script>
@@ -666,10 +673,12 @@
       { pair: 20, src: "samples/20-sargent.jpg",   artist: "Sargent",   who: "a woman leading her horse" },
       { pair: 17, src: "samples/17-gauguin.jpg",   artist: "Gauguin",   who: "a black dog" },
       { pair: 12, src: "samples/12-rembrandt.jpg", artist: "Rembrandt", who: "Lucy" },
-      { pair: 16, src: "samples/16-degas.jpg",     artist: "Degas",     who: "a white horse" },
+      { pair: 16, src: "samples/16-degas.jpg",     artist: "Degas",     who: "a white horse",
+        credit: { name: "Helena Lopes", href: "https://unsplash.com/photos/lIeqGEdvex0" } },
       { pair: 22, src: "samples/22-fragonard.jpg", artist: "Fragonard", who: "a vase of flowers with tomatoes" },
       { pair: 23, src: "samples/23-wyeth.jpg",     artist: "Wyeth",     who: "an orange tabby cat" },
-      { pair: 15, src: "samples/15-david.jpg",     artist: "David",     who: "a grey roan horse" },
+      { pair: 15, src: "samples/15-david.jpg",     artist: "David",     who: "a grey roan horse",
+        credit: { name: "Guillermo Mota", href: "https://unsplash.com/photos/ax2WNRH_bec" } },
       { pair: 3,  src: "samples/03-fragonard.jpg", artist: "Fragonard", who: "Tia and Pepa" },
       { pair: 19, src: "samples/19-homer.jpg",     artist: "Homer",     who: "a red ridgeback" },
       { pair: 14, src: "samples/14-delacroix.jpg", artist: "Delacroix", who: "a woman in a flowing cape" },
@@ -703,7 +712,14 @@
       var bimg = document.createElement("img");
       bimg.className = "ba-before"; bimg.alt = "The original photo of " + s.who + ", before painting";
       bimg.decoding = "async"; bimg.dataset.src = s.before; bimg.draggable = false;
-      f.appendChild(bimg); slidesEl.appendChild(f);
+      bimg.addEventListener("load", function () { placePhoto(f); });
+      f.appendChild(bimg);
+      if (s.credit) {                   // Unsplash befores only (the painting is ours: no credit on the painting side)
+        var cr = document.createElement("a"); cr.className = "ba-credit"; cr.href = s.credit.href; cr.target = "_blank"; cr.rel = "noopener noreferrer";
+        cr.textContent = "Photo: " + s.credit.name + " / Unsplash"; cr.setAttribute("aria-label", "Original photo by " + s.credit.name + " on Unsplash (opens in a new tab)");
+        f.appendChild(cr);
+      }
+      slidesEl.appendChild(f);
       img.addEventListener("load", function () { placePhoto(f); });
       return f;
     });
@@ -741,6 +757,14 @@
       var ra = a.getBoundingClientRect(), rf = f.getBoundingClientRect();   // sub-pixel exact, relative to the slide
       b.style.left = (ra.left - rf.left) + "px"; b.style.top = (ra.top - rf.top) + "px"; b.style.width = ra.width + "px"; b.style.height = ra.height + "px";
       b.classList.add("is-placed");
+      var cr = f.querySelector(".ba-credit");
+      if (cr) {
+        var W = ra.width, Hh = ra.height, iw = W, ih = Hh;
+        if (b.naturalWidth) { var k = Math.min(W / b.naturalWidth, Hh / b.naturalHeight); iw = b.naturalWidth * k; ih = b.naturalHeight * k; }
+        cr.style.right = (rf.right - (ra.left + (W + iw) / 2) + 6) + "px"; var pb = ra.top + (Hh + ih) / 2, bar = document.querySelector(".sd-bottom").getBoundingClientRect().top;   // keep clear of the bottom bar/scrim (desktop overlaps the painting edge)
+        cr.style.bottom = (rf.bottom - Math.min(pb, bar) + 6) + "px";
+        cr.classList.add("is-placed");
+      }
     }
     function cancelPeek() { clearTimeout(peekT1); clearTimeout(peekT2); peekT1 = peekT2 = null; }
     function startPeek() {
@@ -889,7 +913,7 @@
     var sx = 0, sy = 0, st = 0, tracking = false;
     var holdT = null, held = false;
     drawer.addEventListener("pointerdown", function (e) {
-      if (e.target.closest("button") || zoomOpen) return;
+      if (e.target.closest("button, .ba-credit") || zoomOpen) return;
       tracking = true; sx = e.clientX; sy = e.clientY; st = Date.now(); held = false;
       if (e.target.closest(".sd-slide img")) {                  // press-and-hold shows the photo while held
         clearTimeout(holdT); holdT = setTimeout(function () { if (!tracking) return; held = true; setBefore(true, true); }, 380);
