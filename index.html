@@ -712,10 +712,20 @@
     var showBefore = false, hint = document.getElementById("baHint");
     var peekDone = false, peekT1 = null, peekT2 = null;   // one-time auto-flip peek on slide 1, once per page load
     var PEEK_AT = 1200, PEEK_HOLD = 1800;
+    function capWraps() { var r = document.createRange(); r.selectNodeContents(cap); var n = r.getClientRects().length; return n > 1; }
+    function fitCap() {               // one-line label guard (merge preview 2026-10-21); no-op when the label already fits
+      cap.style.removeProperty("font-size"); cap.style.removeProperty("letter-spacing");
+      count.textContent = count.textContent.replace(/\s*\/\s*/, " / ");
+      if (!cap.textContent || !capWraps()) return;
+      count.textContent = count.textContent.replace(/\s*\/\s*/, "/"); cap.style.letterSpacing = "0";
+      var fs = parseFloat(getComputedStyle(cap).fontSize);
+      while (capWraps() && fs > 16) { fs -= 1; cap.style.fontSize = fs + "px"; }
+    }
     function renderLabels() {
       cap.textContent = showBefore ? "The original photo" : "In the style of " + SAMPLES[idx].artist;
       hint.textContent = showBefore ? "Tap to see the painting" : "Tap to see the original photo";
       hint.setAttribute("aria-pressed", showBefore ? "true" : "false");
+      fitCap();
     }
     function setBefore(b, user) {
       if (user) cancelPeek();
@@ -746,7 +756,7 @@
       }, PEEK_AT);
     }
     hint.addEventListener("click", function () { setBefore(!showBefore, true); });
-    window.addEventListener("resize", function () { slides.forEach(function (f) { placePhoto(f); }); });
+    window.addEventListener("resize", function () { fitCap(); slides.forEach(function (f) { placePhoto(f); }); });
 
     function load(i) { slides[i].querySelectorAll("img[data-src]").forEach(function (im) { if (!im.getAttribute("src")) im.src = im.dataset.src; }); }
     function dur() { return reduce.matches ? DUR_RM : DUR; }
@@ -770,6 +780,7 @@
       slides.forEach(function (s) { s.classList.remove("show-before", "ba-swapped"); });
       showBefore = false; renderLabels();
       count.textContent = (idx + 1) + " / " + slides.length;
+      fitCap();
       if (announce) live.textContent = "Painting " + (idx + 1) + " of " + slides.length + ", in the style of " + SAMPLES[idx].artist;
       schedule();
     }
