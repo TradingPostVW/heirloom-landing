@@ -662,6 +662,10 @@
     // pair 9 red dancer painting replaced by red-dancer-delacroix-formalB-final (same before photo).
     // Excluded: 5 green chair cat, 6 pink chair cat (Dreamstime), 7 Papillon (boat issues), 10 red fox dog; Renoir family (no consent);
     // Monet girl (no approved version yet); Sargent tree-line alternate; superseded/ files.
+    // 2026-10-23 (Vince 3:06 PM CT): slide 20 = green dress (pair 24, v7c drop-in, passed by Vince's eye; before = his untouched photo, full frame).
+    // Slides 13 + 20 use the style label AR (Vince 2:43 PM rule: sample labels never carry an artist's name for this style); tabby files renamed to 23-american-realism (same bytes).
+    var AR = "American Realism \u2013 muted tones, dry brush style";        // Vince 2026-10-23 label; no artist name
+    var AR_ALT = ["American Realism \u2013 dry brush style", "American Realism"]; // one-line fallbacks, used only if AR wraps at the 16px guard floor
     var SAMPLES = [
       { pair: 4,  src: "samples/04-rembrandt.jpg", artist: "Rembrandt", who: "Penn" },
       { pair: 2,  src: "samples/02-fragonard.jpg", artist: "Fragonard", who: "Pepa" },
@@ -676,15 +680,20 @@
       { pair: 16, src: "samples/16-degas.jpg",     artist: "Degas",     who: "a white horse",
         credit: { name: "Helena Lopes", href: "https://unsplash.com/photos/lIeqGEdvex0" } },
       { pair: 22, src: "samples/22-fragonard.jpg", artist: "Fragonard", who: "a vase of flowers with tomatoes" },
-      { pair: 23, src: "samples/23-wyeth.jpg",     artist: "Wyeth",     who: "an orange tabby cat" },
+      { pair: 23, src: "samples/23-american-realism.jpg", style: AR, capAlt: AR_ALT, who: "an orange tabby cat" },
       { pair: 15, src: "samples/15-david.jpg",     artist: "David",     who: "a grey roan horse",
         credit: { name: "Guillermo Mota", href: "https://unsplash.com/photos/ax2WNRH_bec" } },
       { pair: 3,  src: "samples/03-fragonard.jpg", artist: "Fragonard", who: "Tia and Pepa" },
       { pair: 19, src: "samples/19-homer.jpg",     artist: "Homer",     who: "a red ridgeback" },
       { pair: 14, src: "samples/14-delacroix.jpg", artist: "Delacroix", who: "a woman in a flowing cape" },
       { pair: 13, src: "samples/13-gericault.jpg", artist: "Géricault", who: "Sal and his horse" },
-      { pair: 11, src: "samples/11-rembrandt.jpg", artist: "Rembrandt", who: "Sven" }
+      { pair: 11, src: "samples/11-rembrandt.jpg", artist: "Rembrandt", who: "Sven" },
+      { pair: 24, src: "samples/24-american-realism.jpg", style: AR, capAlt: AR_ALT, who: "a woman in a green dress" }
     ];
+    // Style label override (Vince 2026-10-23): these slides carry a style label, never an artist name.
+    // styleOf() = the phrase used in captions/aria/alt; artist slides keep the exact "in the style of <artist>" text.
+    function styleOf(s) { return s.style ? s.style : "in the style of " + s.artist; }
+    function capOf(s) { return s.style ? s.style : "In the style of " + s.artist; }
     var reduce = window.matchMedia("(prefers-reduced-motion: reduce)");
     var DUR = 6500, DUR_RM = 12000;
 
@@ -701,9 +710,9 @@
       var f = document.createElement("figure");
       f.className = "sd-slide"; f.setAttribute("role", "group");
       f.setAttribute("aria-roledescription", "slide");
-      f.setAttribute("aria-label", (i + 1) + " of " + SAMPLES.length + ": in the style of " + s.artist);
+      f.setAttribute("aria-label", (i + 1) + " of " + SAMPLES.length + ": " + styleOf(s));
       var img = document.createElement("img");
-      img.alt = "Sample Heirloom portrait of " + s.who + ", painted in the style of " + s.artist;
+      img.alt = "Sample Heirloom portrait of " + s.who + ", painted " + (s.style ? "in " + s.style : styleOf(s));
       img.decoding = "async"; img.dataset.src = s.src; img.draggable = false;
       s.full = s.src.replace("samples/", "samples/full/");
       s.before = s.src.replace("samples/", "samples/before/");
@@ -731,14 +740,20 @@
     function capWraps() { var r = document.createRange(); r.selectNodeContents(cap); var n = r.getClientRects().length; return n > 1; }
     function fitCap() {               // one-line label guard (merge preview 2026-10-21); no-op when the label already fits
       cap.style.removeProperty("font-size"); cap.style.removeProperty("letter-spacing");
+      if (!showBefore && SAMPLES[idx].capAlt) cap.textContent = capOf(SAMPLES[idx]);   // always try the full style label first (e.g. after rotate)
       count.textContent = count.textContent.replace(/\s*\/\s*/, " / ");
       if (!cap.textContent || !capWraps()) return;
       count.textContent = count.textContent.replace(/\s*\/\s*/, "/"); cap.style.letterSpacing = "0";
       var fs = parseFloat(getComputedStyle(cap).fontSize);
       while (capWraps() && fs > 16) { fs -= 1; cap.style.fontSize = fs + "px"; }
+      var alt = !showBefore && SAMPLES[idx].capAlt, k = 0;   // style-label slides only: shorter one-line form if the full label still wraps
+      while (alt && capWraps() && k < alt.length) {
+        cap.textContent = alt[k++]; cap.style.removeProperty("font-size"); fs = parseFloat(getComputedStyle(cap).fontSize);
+        while (capWraps() && fs > 16) { fs -= 1; cap.style.fontSize = fs + "px"; }
+      }
     }
     function renderLabels() {
-      cap.textContent = showBefore ? "The original photo" : "In the style of " + SAMPLES[idx].artist;
+      cap.textContent = showBefore ? "The original photo" : capOf(SAMPLES[idx]);
       hint.textContent = showBefore ? "Tap to see the painting" : "Tap to see the original photo";
       hint.setAttribute("aria-pressed", showBefore ? "true" : "false");
       fitCap();
@@ -749,7 +764,7 @@
       f.classList.toggle("show-before", showBefore); f.classList.toggle("ba-swapped", !showBefore);
       renderLabels();
       if (user && !paused) setPaused(true);
-      if (user) live.textContent = showBefore ? "Showing the original photo. Slideshow paused." : "Showing the painting, in the style of " + SAMPLES[idx].artist + ". Slideshow paused.";
+      if (user) live.textContent = showBefore ? "Showing the original photo. Slideshow paused." : "Showing the painting, " + styleOf(SAMPLES[idx]) + ". Slideshow paused.";
     }
     function placePhoto(f) {          // lay the photo exactly over the painting's box (painting stays in flow)
       f = f || slides[idx]; var a = f.querySelector("img.ba-after"), b = f.querySelector("img.ba-before");
@@ -805,7 +820,7 @@
       showBefore = false; renderLabels();
       count.textContent = (idx + 1) + " / " + slides.length;
       fitCap();
-      if (announce) live.textContent = "Painting " + (idx + 1) + " of " + slides.length + ", in the style of " + SAMPLES[idx].artist;
+      if (announce) live.textContent = "Painting " + (idx + 1) + " of " + slides.length + ", " + styleOf(SAMPLES[idx]);
       schedule();
     }
     function setPaused(p) {
@@ -979,7 +994,7 @@
       zHint.textContent = coarse.matches ? "Pinch or double-tap to zoom · drag to move" : "Scroll or click to zoom · drag to move";
       zoomEl.classList.add("is-open"); zoomEl.setAttribute("aria-hidden", "false");
       zBtn.setAttribute("aria-expanded", "true");
-      live.textContent = (zb ? "Enlarged original photo" : "Enlarged painting, in the style of " + s.artist) + ". Press Escape or Close to return.";
+      live.textContent = (zb ? "Enlarged original photo" : "Enlarged painting, " + styleOf(s)) + ". Press Escape or Close to return.";
       setTimeout(function () { zClose.focus(); }, 0);
     }
     function closeZoom(silent) {
