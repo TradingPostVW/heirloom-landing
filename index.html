@@ -206,7 +206,9 @@
     /* Unsplash photographer credit: photo state only, inside the photo's bottom-right corner (no layout effect). */
     .ba-credit { position:absolute; display:none; z-index:2; padding:2px 6px; font:400 12px/1.3 var(--sans); color:rgba(255,250,240,.9);
       background:rgba(0,0,0,.42); border-radius:3px; text-decoration:none; white-space:nowrap; }
-    .ba-credit:hover, .ba-credit:focus-visible { text-decoration:underline; outline:2px solid var(--ochre); outline-offset:1px; }
+    /* Vince 2026-10-23 credit format: "Photo by <Name> on Unsplash", Name -> profile, Unsplash -> photo page (utm creditCopyText). */
+    .ba-credit a { color:inherit; text-decoration:underline; text-underline-offset:2px; text-decoration-thickness:1px; }
+    .ba-credit a:hover, .ba-credit a:focus-visible { color:#fff; outline:2px solid var(--ochre); outline-offset:1px; }
     .v-B .sd-slide.show-before .ba-credit.is-placed { display:block; animation:baIn .28s ease-out; }
     /* Hidden (opacity 0) slides sit above the current one in DOM order; let taps reach the current slide so its credit link works. */
     .sd-slide:not(.is-on) { pointer-events:none; }
@@ -665,8 +667,9 @@
     // 2026-10-23 (Vince 3:06 PM CT): slide 20 = green dress (pair 24, v7c drop-in, passed by Vince's eye; before = his untouched photo, full frame).
     // Slides 13 + 20 use the style label AR (Vince 2:43 PM rule: sample labels never carry an artist's name for this style); tabby files renamed to 23-american-realism (same bytes).
     // 2026-10-23 (Vince 3:07 PM CT): slide 21 = Seurat boxer (pair 25, his approved bust crop vince-crop-v2; before = his own photo cropped to the painting frame, no credit).
+    // 2026-10-23 3:49/3:53 PM: painting = Peter's sharper vince-crop-v2-1560 (same framing); before = the FULL uncropped photo (Vince: shows people can crop in; letterboxed on flip, as the green dress).
     var AR = "American Realism \u2013 muted tones, dry brush style";        // Vince 2026-10-23 label; no artist name
-    var AR_ALT = ["American Realism \u2013 dry brush style", "American Realism"]; // one-line fallbacks, used only if AR wraps at the 16px guard floor
+    var AR_ALT = ["American Realism"];   // Ivy 2026-10-23: phone one-line fallback (20px), used only if AR wraps at the 16px guard floor
     var SAMPLES = [
       { pair: 4,  src: "samples/04-rembrandt.jpg", artist: "Rembrandt", who: "Penn" },
       { pair: 2,  src: "samples/02-fragonard.jpg", artist: "Fragonard", who: "Pepa" },
@@ -679,11 +682,11 @@
       { pair: 17, src: "samples/17-gauguin.jpg",   artist: "Gauguin",   who: "a black dog" },
       { pair: 12, src: "samples/12-rembrandt.jpg", artist: "Rembrandt", who: "Lucy" },
       { pair: 16, src: "samples/16-degas.jpg",     artist: "Degas",     who: "a white horse",
-        credit: { name: "Helena Lopes", href: "https://unsplash.com/photos/lIeqGEdvex0" } },
+        credit: { name: "Helena Lopes", profile: "https://unsplash.com/@helenalopesph", photo: "https://unsplash.com/photos/running-white-horse-lIeqGEdvex0" } },
       { pair: 22, src: "samples/22-fragonard.jpg", artist: "Fragonard", who: "a vase of flowers with tomatoes" },
       { pair: 23, src: "samples/23-american-realism.jpg", style: AR, capAlt: AR_ALT, who: "an orange tabby cat" },
       { pair: 15, src: "samples/15-david.jpg",     artist: "David",     who: "a grey roan horse",
-        credit: { name: "Guillermo Mota", href: "https://unsplash.com/photos/ax2WNRH_bec" } },
+        credit: { name: "Guillermo Mota", profile: null, photo: "https://unsplash.com/photos/brown-horse-on-brown-grass-field-during-daytime-ax2WNRH_bec" } },   // profile @handle not verified (Unsplash bot wall): name links to the photo page
       { pair: 3,  src: "samples/03-fragonard.jpg", artist: "Fragonard", who: "Tia and Pepa" },
       { pair: 19, src: "samples/19-homer.jpg",     artist: "Homer",     who: "a red ridgeback" },
       { pair: 14, src: "samples/14-delacroix.jpg", artist: "Delacroix", who: "a woman in a flowing cape" },
@@ -726,8 +729,14 @@
       bimg.addEventListener("load", function () { placePhoto(f); });
       f.appendChild(bimg);
       if (s.credit) {                   // Unsplash befores only (the painting is ours: no credit on the painting side)
-        var cr = document.createElement("a"); cr.className = "ba-credit"; cr.href = s.credit.href; cr.target = "_blank"; cr.rel = "noopener noreferrer";
-        cr.textContent = "Photo: " + s.credit.name + " / Unsplash"; cr.setAttribute("aria-label", "Original photo by " + s.credit.name + " on Unsplash (opens in a new tab)");
+        var UTM = "?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText";   // Vince 2026-10-23 format
+        var cr = document.createElement("span"); cr.className = "ba-credit";
+        var lk = function (href, text, label) { var a = document.createElement("a"); a.href = href + UTM; a.target = "_blank"; a.rel = "noopener noreferrer";
+          a.textContent = text; a.setAttribute("aria-label", label + " (opens in a new tab)"); return a; };
+        cr.appendChild(document.createTextNode("Photo by "));
+        cr.appendChild(lk(s.credit.profile || s.credit.photo, s.credit.name, s.credit.profile ? s.credit.name + " on Unsplash" : "Original photo by " + s.credit.name + " on Unsplash"));
+        cr.appendChild(document.createTextNode(" on "));
+        cr.appendChild(lk(s.credit.photo, "Unsplash", "The original photo on Unsplash"));
         f.appendChild(cr);
       }
       slidesEl.appendChild(f);
