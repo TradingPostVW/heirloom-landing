@@ -200,6 +200,16 @@
     /* hint sits just above line 1 (2px clear); the bar's top padding is 50px so the 48px hint stays inside the bar */
     .sd-two .ba-hint { bottom:calc(100% + 2px); }
     .sd-two .sd-bottom { padding-top:50px; }
+    /* Very narrow phones (<=340px, e.g. 300px) — Ivy 2026-10-24 300px fail: side padding 14 -> 10px, square buttons 48 -> 44px wide (48px tall,
+       every tap target >= 44px), control gap 8 -> 4px, Join padding 10 -> 6px, so "Join the waitlist" fits; the 44px zoom button also gives
+       line 2 room for "John Singer Sargent" in full. 1px row gap: at the 18px label size the line gap then matches the hint gap. 360px and up unchanged. */
+    @media (max-width:340px) {
+      .sd-bottom { padding-left:10px; padding-right:10px; }
+      .sd-btn { min-width:44px; padding:0 10px; }
+      .sd-controls { gap:4px; }
+      .sd-join { padding:0 6px; }
+      .sd-two .sd-caption-row { row-gap:1px; }
+    }
   </style>
   <style id="ba-css">
     /* SAMPLES before/after, alternate B (Vince pick 2026-10-20 10:36 AM CT): tap or hold the painting to see the original photo. */
@@ -685,8 +695,8 @@
     // 2026-10-23 (Vince 3:07 PM CT): slide 21 = Seurat boxer (pair 25, his approved bust crop vince-crop-v2; before = his own photo cropped to the painting frame, no credit).
     // 2026-10-23 3:49/3:53 PM: painting = Peter's sharper vince-crop-v2-1560 (same framing); before = the FULL uncropped photo (Vince: shows people can crop in; letterboxed on flip, as the green dress).
     // Label format LOCKED (Vince 2026-10-23 6:44 + 6:45 PM CT, option C): one line "Inspired by <School> · <Artist>" (U+00B7), 18px floor.
-    // Upright phones (Vince 2026-10-24 8:31 AM CT): always two lines, no dot: "Inspired by <School>" / "<Artist>". If a line can't fit at 18px
-    // (only seen at 300px): line 1 tightens <= 0.02em, the artist uses SHORT_ARTIST, then last resort drops the artist / school; never "Inspired by"; no ellipses.
+    // Upright phones (Vince 2026-10-24 8:31 AM CT): always two lines, no dot: "Inspired by <School>" / "<Artist>". Names are never shortened or dropped:
+    // a narrow viewport steps the label size down (floor 16px) and tightens letter spacing (<= 0.03em); no ellipses.
     // Schools = the locked artist schools (explore/2026-10-06-live-app/public/artist-data.js; canon/LOCKS.md 2026-10-07/09).
     var SCHOOL = { "Leonardo":"Renaissance", "Rembrandt":"Baroque", "Fragonard":"Rococo", "David":"Neoclassicism", "Delacroix":"Romanticism",
       "Géricault":"Romanticism", "Turner":"Romanticism", "Degas":"Impressionism", "Van Gogh":"Post-Impressionism", "Seurat":"Post-Impressionism",
@@ -779,8 +789,9 @@
     }
     // Upright phone = portrait and narrower than 600px (Vince 2026-10-24 8:31 AM CT: "vertical phone screens"). Tablets + landscape stay one line.
     var UPRIGHT = window.matchMedia("(orientation: portrait) and (max-width: 599px)");
-    // Two-line shortening (no ellipses): only used if a line won't fit at the 18px floor (seen at 300px). "Inspired by" always stays.
-    var SHORT_ARTIST = { "John Singer Sargent":"Sargent", "Brandywine School":"Brandywine" };
+    // Names are never shortened (Ivy 2026-10-24: "John Singer Sargent" / "Brandywine School" are locked full names). If a line won't fit at 20px,
+    // the whole viewport steps down 1px at a time (floor 16px) with letter spacing tightened up to 0.03em per line; no ellipses, nothing dropped.
+    var LABEL_MIN = 16, TRACK_MAX = 0.03;
     function twoLines(s) { return ["Inspired by " + SCHOOL[s.artist], s.artist]; }
     function setCap(lines) {          // lines = [line1, line2] (two-line) or null (one-line form)
       cap.textContent = "";
@@ -803,18 +814,21 @@
       count.textContent = SAMPLES.length + "/" + SAMPLES.length;                                  // widest counter
       var bW = rowW - row.querySelector(".sd-cap-right").getBoundingClientRect().width - 12;
       count.textContent = keep;
-      var base = parseFloat(getComputedStyle(cap).fontSize), MIN = 18, f, ok = function (L, f) { return tw(L[0], f) <= rowW && tw(L[1], f) <= bW; };
-      for (f = base; f > MIN; f--) if (SAMPLES.every(function (s) { return ok(twoLines(s), f); })) break;   // largest size every slide fits at
-      var lines = SAMPLES.map(function (s) {
-        var L = twoLines(s); if (ok(L, f)) return { L: L, note: "" };
-        var B = tw(L[1], f) <= bW ? L[1] : (SHORT_ARTIST[s.artist] && tw(SHORT_ARTIST[s.artist], f) <= bW ? SHORT_ARTIST[s.artist] : "");
-        var A = L[0], ls = 0, over = tw(A, f) - rowW;
-        if (over > 0 && over <= 0.02 * f * (A.length - 1)) { ls = -Math.ceil(over / (A.length - 1) * 100 + 1) / 100; over = 0; }  // tighten line 1 by <= 0.02em before dropping anything
-        if (over > 0) A = "Inspired by";                                                         // 6:51 PM last resort: drop the school, never "Inspired by"
-        return { L: [A, B], ls: ls, note: (ls ? "line1-tracked" + ls + "px " : "") + (A !== L[0] ? "school-dropped " : "") + (B !== L[1] ? (B ? "artist-short" : "artist-dropped") : "") };
-      });
+      var base = parseFloat(getComputedStyle(cap).fontSize), f;
+      var track = function (t, f, w) {   // letter spacing (px, <= 0) needed for t to fit w at size f, or null if more than TRACK_MAX em
+        var over = tw(t, f) - w; if (over <= 0) return 0; var ls = -Math.ceil(over / (t.length - 1) * 100 + 1) / 100;
+        return -ls <= TRACK_MAX * f ? ls : null; };
+      var plan = function (f) { return SAMPLES.map(function (s) { var L = twoLines(s), a = track(L[0], f, rowW), b = track(L[1], f, bW);
+        return (a === null || b === null) ? null : { L: L, ls: [a, b] }; }); };
+      var P = null;
+      for (f = base; f >= LABEL_MIN; f--) { P = plan(f); if (P.every(Boolean)) break; }
+      if (!P.every(Boolean)) {           // never seen (would need < 16px): keep full names at 16px, tighten as needed
+        f = LABEL_MIN; P = SAMPLES.map(function (s) { var L = twoLines(s);
+          var need = function (t, w) { var o = tw(t, f) - w; return o > 0 ? -Math.ceil(o / (t.length - 1) * 100 + 1) / 100 : 0; };
+          return { L: L, ls: [need(L[0], rowW), need(L[1], bW)] }; }); }
+      P.forEach(function (x) { x.note = (x.ls[0] ? "line1-tracked" + x.ls[0] + "px " : "") + (x.ls[1] ? "line2-tracked" + x.ls[1] + "px" : ""); });
       measureEl && measureEl.remove();
-      return { f: f, lines: lines, rowW: rowW, bW: bW };
+      return { f: f, lines: P, rowW: rowW, bW: bW };
     }
     function fitCap() {
       var two = UPRIGHT.matches; drawer.classList.toggle("sd-two", two);
@@ -827,11 +841,11 @@
           while (capWraps() && fs > MIN) { fs -= 1; cap.style.fontSize = fs + "px"; } }
       } else {
         cap.style.letterSpacing = "0";
-        var key = cap.parentNode.clientWidth + "|" + fs;
+        var key = cap.parentNode.clientWidth + "|" + fs + "|" + (document.fonts ? document.fonts.status : "");   // re-plan once the webfont has loaded
         if (!twoPlan || twoPlan.key !== key) { twoPlan = planTwo(); twoPlan.key = key; }
         var P = twoPlan.lines[idx]; cap.style.fontSize = twoPlan.f + "px";
         setCap(P.L); mode = "two-line" + (P.note ? ":" + P.note.trim() : "");
-        if (P.ls && !showBefore) cap.querySelector(".c1").style.letterSpacing = P.ls + "px";
+        if (!showBefore) { if (P.ls[0]) cap.querySelector(".c1").style.letterSpacing = P.ls[0] + "px"; if (P.ls[1]) cap.querySelector(".c2").style.letterSpacing = P.ls[1] + "px"; }
       }
       cap.setAttribute("data-fit", mode + "|" + getComputedStyle(cap).fontSize);
     }
@@ -877,6 +891,7 @@
       }, PEEK_AT);
     }
     hint.addEventListener("click", function () { setBefore(!showBefore, true); });
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { twoPlan = null; fitCap(); });   // plan with the real font, not the fallback
     window.addEventListener("resize", function () { fitCap(); slides.forEach(function (f) { placePhoto(f); }); });
     window.addEventListener("orientationchange", function () { setTimeout(function () { fitCap(); slides.forEach(function (f) { placePhoto(f); }); }, 150); });   // rotate: re-fit the label once the new width settles
 
