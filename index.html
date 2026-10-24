@@ -185,6 +185,21 @@
     }
   </style>
 
+  <style id="label-css">
+    /* Label LOCKED 2026-10-23 (Vince 6:44/6:45/6:49 PM CT): full "Inspired by <School> · <Artist>", never shortened, >= 18px.
+       .c1 = "Inspired by <School>", .c2 = " · <Artist>"; each never breaks inside, so a wrap can only fall before the "· Artist" part.
+       Two-line mode (.sd-two, set per viewport when ANY slide's label can't fit one line at 18px beside the counter): every slide reserves
+       the same two rows (row A = line 1 at full width, row B = line 2 + counter/zoom), so bar, hint and credits never move between slides or on flip. */
+    .sd-caption .c1, .sd-caption .c2 { white-space:nowrap; }
+    .sd-two .sd-caption-row { display:grid; grid-template-columns:minmax(0,1fr) auto; grid-template-rows:24px 48px; column-gap:12px; row-gap:0; align-items:center; }
+    .sd-two .sd-caption { display:contents; }
+    .sd-two .sd-caption .c1 { grid-row:1; grid-column:1 / -1; min-width:0; overflow:hidden; line-height:24px; height:24px; }
+    .sd-two .sd-caption .c2 { grid-row:2; grid-column:1; line-height:1.2; }
+    .sd-two .sd-cap-right { grid-row:2; grid-column:2; }
+    /* hint sits just above line 1 (2px clear) instead of overlapping the row by 8px; the bar's top padding grows by the same 10px so the 48px hint stays inside the bar */
+    .sd-two .ba-hint { bottom:calc(100% + 2px); }
+    .sd-two .sd-bottom { padding-top:50px; }
+  </style>
   <style id="ba-css">
     /* SAMPLES before/after, alternate B (Vince pick 2026-10-20 10:36 AM CT): tap or hold the painting to see the original photo. */
     .sd-slide img { -webkit-touch-callout:none; }
@@ -665,11 +680,16 @@
     // Excluded: 5 green chair cat, 6 pink chair cat (Dreamstime), 7 Papillon (boat issues), 10 red fox dog; Renoir family (no consent);
     // Monet girl (no approved version yet); Sargent tree-line alternate; superseded/ files.
     // 2026-10-23 (Vince 3:06 PM CT): slide 20 = green dress (pair 24, v7c drop-in, passed by Vince's eye; before = his untouched photo, full frame).
-    // Slides 13 + 20 use the style label AR (Vince 2:43 PM rule: sample labels never carry an artist's name for this style); tabby files renamed to 23-american-realism (same bytes).
+    // Slides 13 + 20 (American Realism samples) carry "Brandywine School" as the artist, never an individual artist name (Vince 2:43 PM rule); tabby files renamed to 23-american-realism (same bytes).
     // 2026-10-23 (Vince 3:07 PM CT): slide 21 = Seurat boxer (pair 25, his approved bust crop vince-crop-v2; before = his own photo cropped to the painting frame, no credit).
     // 2026-10-23 3:49/3:53 PM: painting = Peter's sharper vince-crop-v2-1560 (same framing); before = the FULL uncropped photo (Vince: shows people can crop in; letterboxed on flip, as the green dress).
-    var AR = "American Realism \u2013 muted tones, dry brush style";        // Vince 2026-10-23 label; no artist name
-    var AR_ALT = ["American Realism"];   // Ivy 2026-10-23: phone one-line fallback (20px), used only if AR wraps at the 16px guard floor
+    // Label format LOCKED (Vince 2026-10-23 6:44 + 6:45 PM CT, option C): one line "Inspired by <School> · <Artist>" (U+00B7).
+    // Full label where it fits at >= 18px; otherwise drop the artist and keep "Inspired by <School>" (never drop "Inspired by"). 18px floor.
+    // Schools = the locked artist schools (explore/2026-10-06-live-app/public/artist-data.js; canon/LOCKS.md 2026-10-07/09).
+    var SCHOOL = { "Leonardo":"Renaissance", "Rembrandt":"Baroque", "Fragonard":"Rococo", "David":"Neoclassicism", "Delacroix":"Romanticism",
+      "Géricault":"Romanticism", "Turner":"Romanticism", "Degas":"Impressionism", "Van Gogh":"Post-Impressionism", "Seurat":"Post-Impressionism",
+      "Gauguin":"Post-Impressionism", "John Singer Sargent":"American Realism", "Homer":"American Realism", "Brandywine School":"American Realism" };
+    var BW = "Brandywine School";   // green dress + orange tabby (no individual artist name on these samples)
     var SAMPLES = [
       { pair: 4,  src: "samples/04-rembrandt.jpg", artist: "Rembrandt", who: "Penn" },
       { pair: 2,  src: "samples/02-fragonard.jpg", artist: "Fragonard", who: "Pepa" },
@@ -678,13 +698,13 @@
       { pair: 1,  src: "samples/01-gericault.jpg", artist: "Géricault", who: "Pepa" },
       { pair: 21, src: "samples/21-turner.jpg",    artist: "Turner",    who: "a cormorant drying its wings" },
       { pair: 8,  src: "samples/08-vangogh.jpg",   artist: "Van Gogh",  who: "Theo" },
-      { pair: 20, src: "samples/20-sargent.jpg",   artist: "Sargent",   who: "a woman leading her horse" },
+      { pair: 20, src: "samples/20-sargent.jpg",   artist: "John Singer Sargent", who: "a woman leading her horse" },
       { pair: 17, src: "samples/17-gauguin.jpg",   artist: "Gauguin",   who: "a black dog" },
       { pair: 12, src: "samples/12-rembrandt.jpg", artist: "Rembrandt", who: "Lucy" },
       { pair: 16, src: "samples/16-degas.jpg",     artist: "Degas",     who: "a white horse",
         credit: { name: "Helena Lopes", profile: "https://unsplash.com/@helenalopesph", photo: "https://unsplash.com/photos/running-white-horse-lIeqGEdvex0" } },
       { pair: 22, src: "samples/22-fragonard.jpg", artist: "Fragonard", who: "a vase of flowers with tomatoes" },
-      { pair: 23, src: "samples/23-american-realism.jpg", style: AR, capAlt: AR_ALT, who: "an orange tabby cat" },
+      { pair: 23, src: "samples/23-american-realism.jpg", artist: BW, who: "an orange tabby cat" },
       { pair: 15, src: "samples/15-david.jpg",     artist: "David",     who: "a grey roan horse",
         credit: { name: "Guillermo Mota", profile: null, photo: "https://unsplash.com/photos/brown-horse-on-brown-grass-field-during-daytime-ax2WNRH_bec" } },   // profile @handle not verified (Unsplash bot wall): name links to the photo page
       { pair: 3,  src: "samples/03-fragonard.jpg", artist: "Fragonard", who: "Tia and Pepa" },
@@ -692,13 +712,12 @@
       { pair: 14, src: "samples/14-delacroix.jpg", artist: "Delacroix", who: "a woman in a flowing cape" },
       { pair: 13, src: "samples/13-gericault.jpg", artist: "Géricault", who: "Sal and his horse" },
       { pair: 11, src: "samples/11-rembrandt.jpg", artist: "Rembrandt", who: "Sven" },
-      { pair: 24, src: "samples/24-american-realism.jpg", style: AR, capAlt: AR_ALT, who: "a woman in a green dress" },
+      { pair: 24, src: "samples/24-american-realism.jpg", artist: BW, who: "a woman in a green dress" },
       { pair: 25, src: "samples/25-seurat.jpg",    artist: "Seurat",    who: "a chestnut boxer" }
     ];
-    // Style label override (Vince 2026-10-23): these slides carry a style label, never an artist name.
-    // styleOf() = the phrase used in captions/aria/alt; artist slides keep the exact "in the style of <artist>" text.
-    function styleOf(s) { return s.style ? s.style : "in the style of " + s.artist; }
-    function capOf(s) { return s.style ? s.style : "In the style of " + s.artist; }
+    function capOf(s) { return "Inspired by " + SCHOOL[s.artist] + " \u00b7 " + s.artist; }        // full label (also alt/aria/live)
+    function capForms(s) { return [capOf(s), "Inspired by " + SCHOOL[s.artist]]; }                 // shortening order
+    function styleOf(s) { return "inspired by " + SCHOOL[s.artist] + " \u00b7 " + s.artist; }
     var reduce = window.matchMedia("(prefers-reduced-motion: reduce)");
     var DUR = 6500, DUR_RM = 12000;
 
@@ -715,9 +734,9 @@
       var f = document.createElement("figure");
       f.className = "sd-slide"; f.setAttribute("role", "group");
       f.setAttribute("aria-roledescription", "slide");
-      f.setAttribute("aria-label", (i + 1) + " of " + SAMPLES.length + ": " + styleOf(s));
+      f.setAttribute("aria-label", (i + 1) + " of " + SAMPLES.length + ": " + capOf(s));
       var img = document.createElement("img");
-      img.alt = "Sample Heirloom portrait of " + s.who + ", painted " + (s.style ? "in " + s.style : styleOf(s));
+      img.alt = "Sample Heirloom portrait of " + s.who + ", " + styleOf(s);
       img.decoding = "async"; img.dataset.src = s.src; img.draggable = false;
       s.full = s.src.replace("samples/", "samples/full/");
       s.before = s.src.replace("samples/", "samples/before/");
@@ -748,23 +767,67 @@
     var showBefore = false, hint = document.getElementById("baHint");
     var peekDone = false, peekT1 = null, peekT2 = null;   // one-time auto-flip peek on slide 1, once per page load
     var PEEK_AT = 1200, PEEK_HOLD = 1800;
-    function capWraps() { var r = document.createRange(); r.selectNodeContents(cap); var n = r.getClientRects().length; return n > 1; }
-    function fitCap() {               // one-line label guard (merge preview 2026-10-21); no-op when the label already fits
+    function capWraps() { // more than one distinct line box (a range over several spans yields one rect per span, so count line tops), or clipped
+      var r = document.createRange(); r.selectNodeContents(cap); var tops = {};
+      Array.prototype.forEach.call(r.getClientRects(), function (q) { if (q.width > 0) tops[Math.round(q.top)] = 1; });
+      return Object.keys(tops).length > 1 || cap.scrollWidth > cap.clientWidth + 1; }
+    function labelHTML(s) {          // full label as two unbreakable halves; the only break opportunity is the space before "·"
+      var c1 = document.createElement("span"), c2 = document.createElement("span"); c1.className = "c1"; c2.className = "c2";
+      c1.textContent = "Inspired by " + SCHOOL[s.artist]; c2.textContent = " \u00b7 " + s.artist; return [c1, c2];
+    }
+    function setCap(two, oneLine) {   // fill the caption: photo state, or the label (two-line mode: whole label in row A when it fits there)
+      cap.textContent = "";
+      if (showBefore) { var o = document.createElement("span"); o.className = "c1"; o.textContent = "The original photo"; cap.appendChild(o); return; }
+      var h = labelHTML(SAMPLES[idx]);
+      if (two && oneLine) { h[0].textContent += h[1].textContent; h[1].textContent = ""; }
+      cap.appendChild(h[0]); cap.appendChild(h[1]);
+    }
+    var measureEl = null;
+    function needTwo() {               // this viewport: does ANY slide's full label overflow one line at 18px beside the counter + zoom?
+      drawer.classList.remove("sd-two");
+      if (!measureEl) { measureEl = document.createElement("span"); measureEl.setAttribute("aria-hidden", "true");
+        measureEl.style.cssText = "position:absolute;left:-9999px;top:0;visibility:hidden;white-space:nowrap;letter-spacing:0;font-size:18px"; }
+      measureEl.style.fontFamily = getComputedStyle(cap).fontFamily; cap.parentNode.appendChild(measureEl);
+      var keep = count.textContent; count.textContent = SAMPLES.length + "/" + SAMPLES.length;    // widest counter
+      var row = cap.parentNode.getBoundingClientRect().width, right = cap.parentNode.querySelector(".sd-cap-right").getBoundingClientRect().width;
+      var avail = row - right - 12, w = 0;
+      SAMPLES.forEach(function (s) { measureEl.textContent = capOf(s); w = Math.max(w, measureEl.getBoundingClientRect().width); });
+      count.textContent = keep; measureEl.remove();
+      return w > avail + 0.5;
+    }
+    function fitCap() {               // label guard: never shortens; 1px steps to the 18px floor; two-line mode reserves both rows on every slide
+      var MIN = 18, two = needTwo(); drawer.classList.toggle("sd-two", two);
       cap.style.removeProperty("font-size"); cap.style.removeProperty("letter-spacing");
-      if (!showBefore && SAMPLES[idx].capAlt) cap.textContent = capOf(SAMPLES[idx]);   // always try the full style label first (e.g. after rotate)
-      count.textContent = count.textContent.replace(/\s*\/\s*/, " / ");
-      if (!cap.textContent || !capWraps()) return;
-      count.textContent = count.textContent.replace(/\s*\/\s*/, "/"); cap.style.letterSpacing = "0";
-      var fs = parseFloat(getComputedStyle(cap).fontSize);
-      while (capWraps() && fs > 16) { fs -= 1; cap.style.fontSize = fs + "px"; }
-      var alt = !showBefore && SAMPLES[idx].capAlt, k = 0;   // style-label slides only: shorter one-line form if the full label still wraps
-      while (alt && capWraps() && k < alt.length) {
-        cap.textContent = alt[k++]; cap.style.removeProperty("font-size"); fs = parseFloat(getComputedStyle(cap).fontSize);
-        while (capWraps() && fs > 16) { fs -= 1; cap.style.fontSize = fs + "px"; }
+      count.textContent = count.textContent.replace(/\s*\/\s*/, two ? "/" : " / ");
+      var fs = parseFloat(getComputedStyle(cap).fontSize), mode;
+      var over = function (el) { return el && el.textContent && el.scrollWidth > el.getBoundingClientRect().width + 0.5; };
+      if (!two) {
+        setCap(false); mode = "one-line";
+        if (capWraps()) { count.textContent = count.textContent.replace(/\s*\/\s*/, "/"); cap.style.letterSpacing = "0";
+          while (capWraps() && fs > MIN) { fs -= 1; cap.style.fontSize = fs + "px"; } }
+      } else {                        // two-line box (Vince 6:51 PM): row A = label line 1 (full width), row B = "· Artist" beside the counter/controls
+        cap.style.letterSpacing = "0";
+        var row = cap.parentNode, rowW = row.clientWidth, right = row.querySelector(".sd-cap-right").getBoundingClientRect().width;
+        var bW = rowW - right - 12, base = fs, cs = getComputedStyle(cap);
+        var m = document.createElement("span"); m.setAttribute("aria-hidden", "true");
+        m.style.cssText = "position:absolute;left:-9999px;top:0;visibility:hidden;white-space:nowrap;letter-spacing:0;font-family:" + cs.fontFamily + ";font-weight:" + cs.fontWeight + ";font-style:" + cs.fontStyle;
+        row.appendChild(m);
+        var tw = function (t, f) { m.style.fontSize = f + "px"; m.textContent = t; return m.getBoundingClientRect().width; };
+        var s0 = SAMPLES[idx], full = showBefore ? "The original photo" : capOf(s0), A = "Inspired by " + SCHOOL[s0.artist], B = " \u00b7 " + s0.artist, f;
+        mode = null;
+        for (f = base; f >= MIN && !mode; f--) if (tw(full, f) <= rowW) { mode = "two-row:A"; fs = f; }            // 1) full label on one line
+        if (!mode) for (f = base; f >= MIN && !mode; f--) if (tw(A, f) <= rowW && tw(B, f) <= bW) { mode = "two-row:A+B"; fs = f; } // 2) wrap after the school
+        if (!mode) { mode = "two-row:A:artist-dropped"; fs = MIN;                                                   // 3) last resort: keep "Inspired by <School>"
+          for (f = base; f >= MIN; f--) if (tw(A, f) <= rowW) { fs = f; break; } }
+        m.remove();
+        setCap(true, mode === "two-row:A");
+        if (mode === "two-row:A+B") cap.querySelector(".c2").textContent = B;
+        if (/dropped/.test(mode)) cap.querySelector(".c2").textContent = "";
+        cap.style.fontSize = fs + "px";
       }
+      cap.setAttribute("data-fit", mode + "|" + getComputedStyle(cap).fontSize);
     }
     function renderLabels() {
-      cap.textContent = showBefore ? "The original photo" : capOf(SAMPLES[idx]);
       hint.textContent = showBefore ? "Tap to see the painting" : "Tap to see the original photo";
       hint.setAttribute("aria-pressed", showBefore ? "true" : "false");
       fitCap();
@@ -807,6 +870,7 @@
     }
     hint.addEventListener("click", function () { setBefore(!showBefore, true); });
     window.addEventListener("resize", function () { fitCap(); slides.forEach(function (f) { placePhoto(f); }); });
+    window.addEventListener("orientationchange", function () { setTimeout(function () { fitCap(); slides.forEach(function (f) { placePhoto(f); }); }, 150); });   // rotate: re-fit the label once the new width settles
 
     function load(i) { slides[i].querySelectorAll("img[data-src]").forEach(function (im) { if (!im.getAttribute("src")) im.src = im.dataset.src; }); }
     function dur() { return reduce.matches ? DUR_RM : DUR; }
