@@ -186,29 +186,27 @@
   </style>
 
   <style id="label-css">
-    /* Label LOCKED 2026-10-23 (Vince 6:44/6:45/6:49/6:51 PM CT) + 2026-10-24 8:31 AM CT two-line rule.
-       Desktop / tablet / landscape: one line "Inspired by <School> · <Artist>" (U+00B7), >= 18px.
-       Upright phones (.sd-two = portrait and narrower than 600px): ALWAYS two lines, no dot: line 1 "Inspired by <School>" (full width),
-       line 2 "<Artist>" beside the counter + zoom. Both lines are fixed 24px rows; the 2px row gap makes the visible (ink) gap between them equal the gap between the "Tap to see..." hint and line 1, so the bar is the same height on every slide. */
+    /* Label: desktop / tablet / landscape = one line "Inspired by <School> · <Artist>" (U+00B7), >= 18px (Vince 2026-10-23 6:44/6:45 PM CT).
+       Upright phones (.sd-up = portrait and narrower than 600px; Vince 2026-10-24 9:08 AM CT): ONE line "Inspired by <artist last name>"
+       ("Inspired by Brandywine School" on #13 + #20, the American Realism samples), no school, no dot. The label shares the 48px caption row with the zoom
+       button only; the slide counter moves up to the right end of the "Tap to see..." hint line so every name fits at 300px.
+       Bar = 50px top pad + one 48px row (label line + zoom), same on every slide. */
     .sd-caption .c1, .sd-caption .c2 { white-space:nowrap; }
-    .sd-two .sd-caption-row { display:grid; grid-template-columns:minmax(0,1fr) auto; grid-template-rows:24px 48px; column-gap:12px; row-gap:2px; align-items:start; }
-    .sd-two .sd-caption { display:contents; }
-    .sd-two .sd-caption .c1 { grid-row:1; grid-column:1 / -1; min-width:0; overflow:hidden; line-height:24px; height:24px; }
-    .sd-two .sd-caption .c2 { grid-row:2; grid-column:1; min-width:0; overflow:hidden; line-height:24px; height:24px; }
-    .sd-two .sd-cap-right { grid-row:2; grid-column:2; align-items:flex-start; }
-    .sd-two .sd-count { line-height:24px; }
-    /* hint sits just above line 1 (2px clear); the bar's top padding is 50px so the 48px hint stays inside the bar */
-    .sd-two .ba-hint { bottom:calc(100% + 2px); }
-    .sd-two .sd-bottom { padding-top:50px; }
-    /* Very narrow phones (<=340px, e.g. 300px) — Ivy 2026-10-24 300px fail: side padding 14 -> 10px, square buttons 48 -> 44px wide (48px tall,
-       every tap target >= 44px), control gap 8 -> 4px, Join padding 10 -> 6px, so "Join the waitlist" fits; the 44px zoom button also gives
-       line 2 room for "John Singer Sargent" in full. 1px row gap: at the 18px label size the line gap then matches the hint gap. 360px and up unchanged. */
+    .sd-up .sd-caption-row { align-items:flex-start; }
+    .sd-up .sd-caption { min-width:0; overflow:hidden; line-height:24px; height:24px; min-height:0; }
+    /* hint + counter sit 2px above the row (as in the passed two-line layout), so the counter clears the zoom button's top edge;
+       the label's 24px line is top-aligned with the zoom button. Top padding 50px keeps the 48px hint target inside the bar. */
+    .sd-up .ba-hint { bottom:calc(100% + 2px); }
+    .sd-up .sd-count { position:absolute; right:0; bottom:calc(100% + 2px); height:48px; display:flex; align-items:flex-end; line-height:1.1; pointer-events:none; }
+    .sd-up .sd-bottom { padding-top:50px; }
+    /* Very narrow phones (<=340px, e.g. 300px; Ivy 2026-10-24): side padding 14 -> 10px, square buttons 48 -> 44px wide (48px tall, every tap
+       target >= 44px), control gap 8 -> 4px, Join padding 10 -> 6px so "Join the waitlist" fits; label-to-zoom gap 12 -> 8px. 360px and up unchanged. */
     @media (max-width:340px) {
       .sd-bottom { padding-left:10px; padding-right:10px; }
       .sd-btn { min-width:44px; padding:0 10px; }
       .sd-controls { gap:4px; }
       .sd-join { padding:0 6px; }
-      .sd-two .sd-caption-row { row-gap:1px; }
+      .sd-up .sd-caption-row { gap:8px; }
     }
   </style>
   <style id="ba-css">
@@ -695,8 +693,7 @@
     // 2026-10-23 (Vince 3:07 PM CT): slide 21 = Seurat boxer (pair 25, his approved bust crop vince-crop-v2; before = his own photo cropped to the painting frame, no credit).
     // 2026-10-23 3:49/3:53 PM: painting = Peter's sharper vince-crop-v2-1560 (same framing); before = the FULL uncropped photo (Vince: shows people can crop in; letterboxed on flip, as the green dress).
     // Label format LOCKED (Vince 2026-10-23 6:44 + 6:45 PM CT, option C): one line "Inspired by <School> · <Artist>" (U+00B7), 18px floor.
-    // Upright phones (Vince 2026-10-24 8:31 AM CT): always two lines, no dot: "Inspired by <School>" / "<Artist>". Names are never shortened or dropped:
-    // a narrow viewport steps the label size down (floor 16px) and tightens letter spacing (<= 0.03em); no ellipses.
+    // Upright phones (Vince 2026-10-24 9:08 AM CT): one line "Inspired by <artist last name>" (see UPRIGHT / upLabel below); alt/aria/live keep the full label.
     // Schools = the locked artist schools (explore/2026-10-06-live-app/public/artist-data.js; canon/LOCKS.md 2026-10-07/09).
     var SCHOOL = { "Leonardo":"Renaissance", "Rembrandt":"Baroque", "Fragonard":"Rococo", "David":"Neoclassicism", "Delacroix":"Romanticism",
       "Géricault":"Romanticism", "Turner":"Romanticism", "Degas":"Impressionism", "Van Gogh":"Post-Impressionism", "Seurat":"Post-Impressionism",
@@ -787,18 +784,19 @@
       var c1 = document.createElement("span"), c2 = document.createElement("span"); c1.className = "c1"; c2.className = "c2";
       c1.textContent = "Inspired by " + SCHOOL[s.artist]; c2.textContent = " \u00b7 " + s.artist; return [c1, c2];
     }
-    // Upright phone = portrait and narrower than 600px (Vince 2026-10-24 8:31 AM CT: "vertical phone screens"). Tablets + landscape stay one line.
+    // Upright phone = portrait and narrower than 600px. Vince 2026-10-24 9:08 AM CT: one line "Inspired by <artist last name>";
+    // #13 + #20 (American Realism samples) "Inspired by Brandywine School". "Leonardo" (not "da Vinci") matches the app's artist card.
     var UPRIGHT = window.matchMedia("(orientation: portrait) and (max-width: 599px)");
-    // Names are never shortened (Ivy 2026-10-24: "John Singer Sargent" / "Brandywine School" are locked full names). If a line won't fit at 20px,
-    // the whole viewport steps down 1px at a time (floor 16px) with letter spacing tightened up to 0.03em per line; no ellipses, nothing dropped.
+    var LAST = { "John Singer Sargent":"Sargent" };                  // every other artist key is already the last name / app name
+    function upLabel(s) { return "Inspired by " + (LAST[s.artist] || s.artist); }
+    // Names are never shortened: if a label won't fit beside the zoom button at 20px, that slide steps down 1px at a time (floor 16px) with
+    // letter spacing tightened up to 0.03em; no ellipses. The bar does not change size (fixed 48px row), so nothing jumps.
     var LABEL_MIN = 16, TRACK_MAX = 0.03;
-    function twoLines(s) { return ["Inspired by " + SCHOOL[s.artist], s.artist]; }
-    function setCap(lines) {          // lines = [line1, line2] (two-line) or null (one-line form)
+    function setCap(text) {           // text = upright one-line label, or null for the desktop/landscape two-part label
       cap.textContent = "";
-      if (showBefore) { var o = document.createElement("span"); o.className = "c1"; o.textContent = "The original photo"; cap.appendChild(o);
-        if (lines) { var e = document.createElement("span"); e.className = "c2"; cap.appendChild(e); } return; }
-      if (!lines) { var h = labelHTML(SAMPLES[idx]); cap.appendChild(h[0]); cap.appendChild(h[1]); return; }
-      lines.forEach(function (t, i) { var sp = document.createElement("span"); sp.className = i ? "c2" : "c1"; sp.textContent = t; cap.appendChild(sp); });
+      if (showBefore) { var o = document.createElement("span"); o.className = "c1"; o.textContent = "The original photo"; cap.appendChild(o); return; }
+      if (text === null) { var h = labelHTML(SAMPLES[idx]); cap.appendChild(h[0]); cap.appendChild(h[1]); return; }
+      var sp = document.createElement("span"); sp.className = "c1"; sp.textContent = text; cap.appendChild(sp);
     }
     var measureEl = null;
     function tw(t, f) {               // text width at font-size f (letter-spacing 0, caption font)
@@ -808,44 +806,36 @@
       if (!measureEl.parentNode) cap.parentNode.appendChild(measureEl);
       measureEl.style.fontSize = f + "px"; measureEl.textContent = t; return measureEl.getBoundingClientRect().width;
     }
-    var twoPlan = null;               // per viewport: one font size for every slide + each slide's two lines (shortened only where needed)
-    function planTwo() {
-      var row = cap.parentNode, rowW = row.clientWidth, keep = count.textContent;
-      count.textContent = SAMPLES.length + "/" + SAMPLES.length;                                  // widest counter
-      var bW = rowW - row.querySelector(".sd-cap-right").getBoundingClientRect().width - 12;
-      count.textContent = keep;
-      var base = parseFloat(getComputedStyle(cap).fontSize), f;
-      var track = function (t, f, w) {   // letter spacing (px, <= 0) needed for t to fit w at size f, or null if more than TRACK_MAX em
-        var over = tw(t, f) - w; if (over <= 0) return 0; var ls = -Math.ceil(over / (t.length - 1) * 100 + 1) / 100;
-        return -ls <= TRACK_MAX * f ? ls : null; };
-      var plan = function (f) { return SAMPLES.map(function (s) { var L = twoLines(s), a = track(L[0], f, rowW), b = track(L[1], f, bW);
-        return (a === null || b === null) ? null : { L: L, ls: [a, b] }; }); };
-      var P = null;
-      for (f = base; f >= LABEL_MIN; f--) { P = plan(f); if (P.every(Boolean)) break; }
-      if (!P.every(Boolean)) {           // never seen (would need < 16px): keep full names at 16px, tighten as needed
-        f = LABEL_MIN; P = SAMPLES.map(function (s) { var L = twoLines(s);
-          var need = function (t, w) { var o = tw(t, f) - w; return o > 0 ? -Math.ceil(o / (t.length - 1) * 100 + 1) / 100 : 0; };
-          return { L: L, ls: [need(L[0], rowW), need(L[1], bW)] }; }); }
-      P.forEach(function (x) { x.note = (x.ls[0] ? "line1-tracked" + x.ls[0] + "px " : "") + (x.ls[1] ? "line2-tracked" + x.ls[1] + "px" : ""); });
+    var upPlan = null;                // per viewport: each slide's size + tracking for its upright label
+    function planUp() {
+      var row = cap.parentNode, cs = getComputedStyle(row);
+      var avail = row.clientWidth - row.querySelector(".sd-cap-right").getBoundingClientRect().width - parseFloat(cs.columnGap || cs.gap || 12);
+      var base = parseFloat(getComputedStyle(cap).fontSize);
+      var lines = SAMPLES.map(function (s) {
+        var t = upLabel(s), f, over;
+        for (f = base; f >= LABEL_MIN; f--) { over = tw(t, f) - avail; if (over <= 0) return { t: t, f: f, ls: 0 };
+          if (over / (t.length - 1) <= TRACK_MAX * f) return { t: t, f: f, ls: -Math.ceil(over / (t.length - 1) * 100 + 1) / 100 }; }
+        over = tw(t, LABEL_MIN) - avail; return { t: t, f: LABEL_MIN, ls: -Math.ceil(over / (t.length - 1) * 100 + 1) / 100 };   // never seen
+      });
       measureEl && measureEl.remove();
-      return { f: f, lines: P, rowW: rowW, bW: bW };
+      return { avail: avail, lines: lines };
     }
     function fitCap() {
-      var two = UPRIGHT.matches; drawer.classList.toggle("sd-two", two);
+      var up = UPRIGHT.matches, MIN = 18; drawer.classList.toggle("sd-up", up);
       cap.style.removeProperty("font-size"); cap.style.removeProperty("letter-spacing");
-      count.textContent = count.textContent.replace(/\s*\/\s*/, two ? "/" : " / ");
-      var fs = parseFloat(getComputedStyle(cap).fontSize), mode, MIN = 18;
-      if (!two) {
-        twoPlan = null; setCap(null); mode = "one-line";
+      count.textContent = count.textContent.replace(/\s*\/\s*/, up ? "/" : " / ");
+      var fs = parseFloat(getComputedStyle(cap).fontSize), mode;
+      if (!up) {
+        upPlan = null; setCap(null); mode = "one-line";
         if (capWraps()) { count.textContent = count.textContent.replace(/\s*\/\s*/, "/"); cap.style.letterSpacing = "0";
           while (capWraps() && fs > MIN) { fs -= 1; cap.style.fontSize = fs + "px"; } }
       } else {
         cap.style.letterSpacing = "0";
         var key = cap.parentNode.clientWidth + "|" + fs + "|" + (document.fonts ? document.fonts.status : "");   // re-plan once the webfont has loaded
-        if (!twoPlan || twoPlan.key !== key) { twoPlan = planTwo(); twoPlan.key = key; }
-        var P = twoPlan.lines[idx]; cap.style.fontSize = twoPlan.f + "px";
-        setCap(P.L); mode = "two-line" + (P.note ? ":" + P.note.trim() : "");
-        if (!showBefore) { if (P.ls[0]) cap.querySelector(".c1").style.letterSpacing = P.ls[0] + "px"; if (P.ls[1]) cap.querySelector(".c2").style.letterSpacing = P.ls[1] + "px"; }
+        if (!upPlan || upPlan.key !== key) { upPlan = planUp(); upPlan.key = key; }
+        var P = upPlan.lines[idx];
+        setCap(P.t); mode = "upright" + (P.ls ? ":tracked" + P.ls + "px" : "");
+        if (!showBefore) { cap.style.fontSize = P.f + "px"; if (P.ls) cap.style.letterSpacing = P.ls + "px"; }
       }
       cap.setAttribute("data-fit", mode + "|" + getComputedStyle(cap).fontSize);
     }
@@ -891,7 +881,7 @@
       }, PEEK_AT);
     }
     hint.addEventListener("click", function () { setBefore(!showBefore, true); });
-    if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { twoPlan = null; fitCap(); });   // plan with the real font, not the fallback
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { upPlan = null; fitCap(); });   // plan with the real font, not the fallback
     window.addEventListener("resize", function () { fitCap(); slides.forEach(function (f) { placePhoto(f); }); });
     window.addEventListener("orientationchange", function () { setTimeout(function () { fitCap(); slides.forEach(function (f) { placePhoto(f); }); }, 150); });   // rotate: re-fit the label once the new width settles
 
