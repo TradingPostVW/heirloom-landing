@@ -73,6 +73,12 @@
     @media (max-width:899px) { /* painting top sits below the CLOSE tab (top-right), so B never overlaps it */
       .v-B .sd-slide { padding:calc(var(--sd-top) + 176px + 12px) 12px 176px; }
     }
+    /* Sideways phones (landscape, <= 500px tall, < 900px wide; 2026-10-26): the rule above left 0-10px for the painting (667x375: 0px,
+       844x390: 10px). Here the painting sits BESIDE the CLOSE tab instead of below it: 64px sides clear the 52px tab, 56px top clears the
+       HEIRLOOM mark, 156px bottom = the desktop rule (painting ends ~20px into the bar's top scrim, above the hint text). */
+    @media (max-width:899px) and (orientation:landscape) and (max-height:500px) {
+      .v-B .sd-slide { padding:56px 64px 156px; }
+    }
 
     /* top + bottom chrome with scrims */
     .sd-top {
@@ -185,6 +191,31 @@
     }
   </style>
 
+  <style id="label-css">
+    /* Label: desktop / tablet / landscape = ONE line, never wrapped or ellipsised (Vince 2026-10-26 10:23 AM CT): the longest of
+       "Inspired by <School> · <full name>" / "Inspired by <School> · <last name>" / "Inspired by <last name>" that fits the measured width.
+       Upright phones (.sd-up = portrait and narrower than 600px; Vince 2026-10-24 9:08 AM CT): ONE line "Inspired by <artist last name>"
+       ("Inspired by Brandywine School" on #13 + #20, the American Realism samples), no school, no dot. The label shares the 48px caption row with the zoom
+       button only; the slide counter moves up to the right end of the "Tap to see..." hint line so every name fits at 300px.
+       Bar = 50px top pad + one 48px row (label line + zoom), same on every slide. */
+    .sd-caption .c1, .sd-caption .c2 { white-space:nowrap; }
+    .sd-up .sd-caption-row { align-items:flex-start; }
+    .sd-up .sd-caption { min-width:0; overflow:hidden; line-height:24px; height:24px; min-height:0; }
+    /* hint + counter sit 2px above the row (as in the passed two-line layout), so the counter clears the zoom button's top edge;
+       the label's 24px line is top-aligned with the zoom button. Top padding 50px keeps the 48px hint target inside the bar. */
+    .sd-up .ba-hint { bottom:calc(100% + 2px); }
+    .sd-up .sd-count { position:absolute; right:0; bottom:calc(100% + 2px); height:48px; display:flex; align-items:flex-end; line-height:1.1; pointer-events:none; }
+    .sd-up .sd-bottom { padding-top:50px; }
+    /* Very narrow phones (<=340px, e.g. 300px; Ivy 2026-10-24): side padding 14 -> 10px, square buttons 48 -> 44px wide (48px tall, every tap
+       target >= 44px), control gap 8 -> 4px, Join padding 10 -> 6px so "Join the waitlist" fits; label-to-zoom gap 12 -> 8px. 360px and up unchanged. */
+    @media (max-width:340px) {
+      .sd-bottom { padding-left:10px; padding-right:10px; }
+      .sd-btn { min-width:44px; padding:0 10px; }
+      .sd-controls { gap:4px; }
+      .sd-join { padding:0 6px; }
+      .sd-up .sd-caption-row { gap:8px; }
+    }
+  </style>
   <style id="ba-css">
     /* SAMPLES before/after, alternate B (Vince pick 2026-10-20 10:36 AM CT): tap or hold the painting to see the original photo. */
     .sd-slide img { -webkit-touch-callout:none; }
@@ -206,7 +237,9 @@
     /* Unsplash photographer credit: photo state only, inside the photo's bottom-right corner (no layout effect). */
     .ba-credit { position:absolute; display:none; z-index:2; padding:2px 6px; font:400 12px/1.3 var(--sans); color:rgba(255,250,240,.9);
       background:rgba(0,0,0,.42); border-radius:3px; text-decoration:none; white-space:nowrap; }
-    .ba-credit:hover, .ba-credit:focus-visible { text-decoration:underline; outline:2px solid var(--ochre); outline-offset:1px; }
+    /* Vince 2026-10-23 credit format: "Photo by <Name> on Unsplash", Name -> profile, Unsplash -> photo page (utm creditCopyText). */
+    .ba-credit a { color:inherit; text-decoration:underline; text-underline-offset:2px; text-decoration-thickness:1px; }
+    .ba-credit a:hover, .ba-credit a:focus-visible { color:#fff; outline:2px solid var(--ochre); outline-offset:1px; }
     .v-B .sd-slide.show-before .ba-credit.is-placed { display:block; animation:baIn .28s ease-out; }
     /* Hidden (opacity 0) slides sit above the current one in DOM order; let taps reach the current slide so its credit link works. */
     .sd-slide:not(.is-on) { pointer-events:none; }
@@ -662,6 +695,18 @@
     // pair 9 red dancer painting replaced by red-dancer-delacroix-formalB-final (same before photo).
     // Excluded: 5 green chair cat, 6 pink chair cat (Dreamstime), 7 Papillon (boat issues), 10 red fox dog; Renoir family (no consent);
     // Monet girl (no approved version yet); Sargent tree-line alternate; superseded/ files.
+    // 2026-10-23 (Vince 3:06 PM CT): slide 20 = green dress (pair 24, v7c drop-in, passed by Vince's eye; before = his untouched photo, full frame).
+    // Slides 13 + 20 (American Realism samples) carry "Brandywine School" as the artist, never an individual artist name (Vince 2:43 PM rule); tabby files renamed to 23-american-realism (same bytes).
+    // 2026-10-23 (Vince 3:07 PM CT): slide 21 = Seurat boxer (pair 25, his approved bust crop vince-crop-v2; before = his own photo cropped to the painting frame, no credit).
+    // 2026-10-23 3:49/3:53 PM: painting = Peter's sharper vince-crop-v2-1560 (same framing); before = the FULL uncropped photo (Vince: shows people can crop in; letterboxed on flip, as the green dress).
+    // Label format LOCKED (Vince 2026-10-23 6:44 + 6:45 PM CT, option C): one line "Inspired by <School> · <Artist>" (U+00B7), 18px floor.
+    // Upright phones (Vince 2026-10-24 9:08 AM CT): one line "Inspired by <artist last name>" (see UPRIGHT / upLabel below); alt/aria/live keep the full label.
+    // Schools = the locked artist schools (explore/2026-10-06-live-app/public/artist-data.js; canon/LOCKS.md 2026-10-07/09).
+    var SCHOOL = { "Leonardo":"Renaissance", "Rembrandt":"Baroque", "Fragonard":"Rococo", "David":"Neoclassicism", "Delacroix":"Romanticism",
+      "Géricault":"Romanticism", "Turner":"Romanticism", "Degas":"Impressionism", "Van Gogh":"Post-Impressionism", "Seurat":"Post-Impressionism",
+      "Gauguin":"Post-Impressionism", "John Singer Sargent":"Academic Realism", "Homer":"American Realism", "Brandywine School":"American Realism" };
+    // Vince 2026-10-26 10:44 AM CT: Sargent = Academic Realism on the landing slideshow (the app's artist pages keep American Realism + explainer).
+    var BW = "Brandywine School";   // green dress + orange tabby (no individual artist name on these samples)
     var SAMPLES = [
       { pair: 4,  src: "samples/04-rembrandt.jpg", artist: "Rembrandt", who: "Penn" },
       { pair: 2,  src: "samples/02-fragonard.jpg", artist: "Fragonard", who: "Pepa" },
@@ -670,21 +715,42 @@
       { pair: 1,  src: "samples/01-gericault.jpg", artist: "Géricault", who: "Pepa" },
       { pair: 21, src: "samples/21-turner.jpg",    artist: "Turner",    who: "a cormorant drying its wings" },
       { pair: 8,  src: "samples/08-vangogh.jpg",   artist: "Van Gogh",  who: "Theo" },
-      { pair: 20, src: "samples/20-sargent.jpg",   artist: "Sargent",   who: "a woman leading her horse" },
+      { pair: 20, src: "samples/20-sargent.jpg",   artist: "John Singer Sargent", who: "a woman leading her horse" },
       { pair: 17, src: "samples/17-gauguin.jpg",   artist: "Gauguin",   who: "a black dog" },
       { pair: 12, src: "samples/12-rembrandt.jpg", artist: "Rembrandt", who: "Lucy" },
       { pair: 16, src: "samples/16-degas.jpg",     artist: "Degas",     who: "a white horse",
-        credit: { name: "Helena Lopes", href: "https://unsplash.com/photos/lIeqGEdvex0" } },
+        credit: { name: "Helena Lopes", profile: "https://unsplash.com/@helenalopesph", photo: "https://unsplash.com/photos/running-white-horse-lIeqGEdvex0" } },
       { pair: 22, src: "samples/22-fragonard.jpg", artist: "Fragonard", who: "a vase of flowers with tomatoes" },
-      { pair: 23, src: "samples/23-wyeth.jpg",     artist: "Wyeth",     who: "an orange tabby cat" },
+      { pair: 23, src: "samples/23-american-realism.jpg", artist: BW, who: "an orange tabby cat" },
       { pair: 15, src: "samples/15-david.jpg",     artist: "David",     who: "a grey roan horse",
-        credit: { name: "Guillermo Mota", href: "https://unsplash.com/photos/ax2WNRH_bec" } },
+        credit: { name: "Guillermo Mota", profile: null, photo: "https://unsplash.com/photos/brown-horse-on-brown-grass-field-during-daytime-ax2WNRH_bec" } },   // profile @handle not verified (Unsplash bot wall): name links to the photo page
       { pair: 3,  src: "samples/03-fragonard.jpg", artist: "Fragonard", who: "Tia and Pepa" },
       { pair: 19, src: "samples/19-homer.jpg",     artist: "Homer",     who: "a red ridgeback" },
       { pair: 14, src: "samples/14-delacroix.jpg", artist: "Delacroix", who: "a woman in a flowing cape" },
       { pair: 13, src: "samples/13-gericault.jpg", artist: "Géricault", who: "Sal and his horse" },
-      { pair: 11, src: "samples/11-rembrandt.jpg", artist: "Rembrandt", who: "Sven" }
+      { pair: 11, src: "samples/11-rembrandt.jpg", artist: "Rembrandt", who: "Sven" },
+      { pair: 24, src: "samples/24-american-realism.jpg", artist: BW, who: "a woman in a green dress" },
+      { pair: 25, src: "samples/25-seurat.jpg",    artist: "Seurat",    who: "a chestnut boxer" }
     ];
+    // Label rules (Vince 2026-10-26 10:23 AM CT). Full names = the app's artist cards (explore/2026-10-06-live-app/public/artist-data.js "name");
+    // Géricault is not in the app data. LAST = the last-name convention (Sargent, David, Géricault...); Leonardo -> "da Vinci".
+    var FULL = { "Leonardo":"Leonardo da Vinci", "Rembrandt":"Rembrandt van Rijn", "Fragonard":"Jean-Honoré Fragonard", "David":"Jacques-Louis David",
+      "Delacroix":"Eugène Delacroix", "Géricault":"Théodore Géricault", "Turner":"J. M. W. Turner", "Van Gogh":"Vincent van Gogh", "Gauguin":"Paul Gauguin",
+      "Degas":"Edgar Degas", "Seurat":"Georges Seurat", "John Singer Sargent":"John Singer Sargent", "Homer":"Winslow Homer" };
+    var LAST = { "Leonardo":"da Vinci", "John Singer Sargent":"Sargent" };   // every other artist key is already the last name
+    function fullOf(s) { return FULL[s.artist] || s.artist; }
+    function lastOf(s) { return LAST[s.artist] || s.artist; }
+    function capOf(s) { return "Inspired by " + SCHOOL[s.artist] + " \u00b7 " + fullOf(s); }       // full label (also alt/aria/live)
+    // Horizontal displays (landscape phones, tablets, desktop): ONE line, longest tier that fits the measured width.
+    //   a = "Inspired by <School> · <full name>", b = "Inspired by <School> · <last name>", c = "Inspired by <last name>".
+    //   Brandywine slides: a = b = "Inspired by American Realism · Brandywine School", c = "Inspired by Brandywine".
+    function tiersOf(s) {
+      var sch = "Inspired by " + SCHOOL[s.artist], bw = s.artist === BW;
+      return [ { k: "a", p: [sch, " \u00b7 " + (bw ? BW : fullOf(s))] },
+               { k: "b", p: [sch, " \u00b7 " + (bw ? BW : lastOf(s))] },
+               { k: "c", p: ["Inspired by " + (bw ? "Brandywine" : lastOf(s))] } ];
+    }
+    function styleOf(s) { return "inspired by " + SCHOOL[s.artist] + " \u00b7 " + fullOf(s); }
     var reduce = window.matchMedia("(prefers-reduced-motion: reduce)");
     var DUR = 6500, DUR_RM = 12000;
 
@@ -701,9 +767,9 @@
       var f = document.createElement("figure");
       f.className = "sd-slide"; f.setAttribute("role", "group");
       f.setAttribute("aria-roledescription", "slide");
-      f.setAttribute("aria-label", (i + 1) + " of " + SAMPLES.length + ": in the style of " + s.artist);
+      f.setAttribute("aria-label", (i + 1) + " of " + SAMPLES.length + ": " + capOf(s));
       var img = document.createElement("img");
-      img.alt = "Sample Heirloom portrait of " + s.who + ", painted in the style of " + s.artist;
+      img.alt = "Sample Heirloom portrait of " + s.who + ", " + styleOf(s);
       img.decoding = "async"; img.dataset.src = s.src; img.draggable = false;
       s.full = s.src.replace("samples/", "samples/full/");
       s.before = s.src.replace("samples/", "samples/before/");
@@ -715,12 +781,18 @@
       bimg.addEventListener("load", function () { placePhoto(f); });
       f.appendChild(bimg);
       if (s.credit) {                   // Unsplash befores only (the painting is ours: no credit on the painting side)
-        var cr = document.createElement("a"); cr.className = "ba-credit"; cr.href = s.credit.href; cr.target = "_blank"; cr.rel = "noopener noreferrer";
-        cr.textContent = "Photo: " + s.credit.name + " / Unsplash"; cr.setAttribute("aria-label", "Original photo by " + s.credit.name + " on Unsplash (opens in a new tab)");
+        var UTM = "?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText";   // Vince 2026-10-23 format
+        var cr = document.createElement("span"); cr.className = "ba-credit";
+        var lk = function (href, text, label) { var a = document.createElement("a"); a.href = href + UTM; a.target = "_blank"; a.rel = "noopener noreferrer";
+          a.textContent = text; a.setAttribute("aria-label", label + " (opens in a new tab)"); return a; };
+        cr.appendChild(document.createTextNode("Photo by "));
+        cr.appendChild(lk(s.credit.profile || s.credit.photo, s.credit.name, s.credit.profile ? s.credit.name + " on Unsplash" : "Original photo by " + s.credit.name + " on Unsplash"));
+        cr.appendChild(document.createTextNode(" on "));
+        cr.appendChild(lk(s.credit.photo, "Unsplash", "The original photo on Unsplash"));
         f.appendChild(cr);
       }
       slidesEl.appendChild(f);
-      img.addEventListener("load", function () { placePhoto(f); });
+      img.addEventListener("load", function () { placePhoto(f); if (f === slides[idx]) placePaused(); });
       return f;
     });
 
@@ -728,17 +800,94 @@
     var showBefore = false, hint = document.getElementById("baHint");
     var peekDone = false, peekT1 = null, peekT2 = null;   // one-time auto-flip peek on slide 1, once per page load
     var PEEK_AT = 1200, PEEK_HOLD = 1800;
-    function capWraps() { var r = document.createRange(); r.selectNodeContents(cap); var n = r.getClientRects().length; return n > 1; }
-    function fitCap() {               // one-line label guard (merge preview 2026-10-21); no-op when the label already fits
+    function capWraps() { // more than one distinct line box (a range over several spans yields one rect per span, so count line tops), or clipped
+      var r = document.createRange(); r.selectNodeContents(cap); var tops = {};
+      Array.prototype.forEach.call(r.getClientRects(), function (q) { if (q.width > 0) tops[Math.round(q.top)] = 1; });
+      return Object.keys(tops).length > 1 || cap.scrollWidth > cap.clientWidth + 1; }
+    function setParts(parts) {        // one or two unbreakable spans ("Inspired by <School>" + " · <Artist>")
+      cap.textContent = ""; parts.forEach(function (t, i) { var e = document.createElement("span"); e.className = i ? "c2" : "c1"; e.textContent = t; cap.appendChild(e); });
+    }
+    // Upright phone = portrait and narrower than 600px. Vince 2026-10-24 9:08 AM CT: one line "Inspired by <artist last name>";
+    // #13 + #20 (American Realism samples) "Inspired by Brandywine School". Vince 2026-10-26 10:23 AM CT: Leonardo -> "Inspired by da Vinci".
+    var UPRIGHT = window.matchMedia("(orientation: portrait) and (max-width: 599px)");
+    function upLabel(s) { return "Inspired by " + (s.artist === BW ? BW : lastOf(s)); }
+    // Names are never shortened: if a label won't fit beside the zoom button at 20px, that slide steps down 1px at a time (floor 16px) with
+    // letter spacing tightened up to 0.03em; no ellipses. The bar does not change size (fixed 48px row), so nothing jumps.
+    var LABEL_MIN = 16, TRACK_MAX = 0.03;
+    function setCap(text) {           // text = upright one-line label (horizontal tiers use setParts)
+      setParts([showBefore ? "The original photo" : text]);
+    }
+    function inkW() { var r = document.createRange(); r.selectNodeContents(cap); return r.getBoundingClientRect().width; }   // rendered text width
+    function hAvail() {               // width the label may use on a horizontal display: caption row minus counter/zoom group minus gap
+      var row = cap.parentNode, cs = getComputedStyle(row);
+      return row.clientWidth - row.querySelector(".sd-cap-right").getBoundingClientRect().width - parseFloat(cs.columnGap || cs.gap || 12);
+    }
+    var measureEl = null;
+    function tw(t, f) {               // text width at font-size f (letter-spacing 0, caption font)
+      if (!measureEl) { measureEl = document.createElement("span"); measureEl.setAttribute("aria-hidden", "true");
+        measureEl.style.cssText = "position:absolute;left:-9999px;top:0;visibility:hidden;white-space:nowrap;letter-spacing:0"; }
+      var cs = getComputedStyle(cap); measureEl.style.fontFamily = cs.fontFamily; measureEl.style.fontWeight = cs.fontWeight; measureEl.style.fontStyle = cs.fontStyle;
+      if (!measureEl.parentNode) cap.parentNode.appendChild(measureEl);
+      measureEl.style.fontSize = f + "px"; measureEl.textContent = t; return measureEl.getBoundingClientRect().width;
+    }
+    var upPlan = null;                // per viewport: each slide's size + tracking for its upright label
+    function planUp() {
+      var row = cap.parentNode, cs = getComputedStyle(row);
+      var avail = row.clientWidth - row.querySelector(".sd-cap-right").getBoundingClientRect().width - parseFloat(cs.columnGap || cs.gap || 12);
+      var base = parseFloat(getComputedStyle(cap).fontSize);
+      var lines = SAMPLES.map(function (s) {
+        var t = upLabel(s), f, over;
+        for (f = base; f >= LABEL_MIN; f--) { over = tw(t, f) - avail; if (over <= 0) return { t: t, f: f, ls: 0 };
+          if (over / (t.length - 1) <= TRACK_MAX * f) return { t: t, f: f, ls: -Math.ceil(over / (t.length - 1) * 100 + 1) / 100 }; }
+        over = tw(t, LABEL_MIN) - avail; return { t: t, f: LABEL_MIN, ls: -Math.ceil(over / (t.length - 1) * 100 + 1) / 100 };   // never seen
+      });
+      measureEl && measureEl.remove();
+      return { avail: avail, lines: lines };
+    }
+    function fitCap() {
+      var up = UPRIGHT.matches, MIN = 18; drawer.classList.toggle("sd-up", up);
       cap.style.removeProperty("font-size"); cap.style.removeProperty("letter-spacing");
-      count.textContent = count.textContent.replace(/\s*\/\s*/, " / ");
-      if (!cap.textContent || !capWraps()) return;
-      count.textContent = count.textContent.replace(/\s*\/\s*/, "/"); cap.style.letterSpacing = "0";
-      var fs = parseFloat(getComputedStyle(cap).fontSize);
-      while (capWraps() && fs > 16) { fs -= 1; cap.style.fontSize = fs + "px"; }
+      count.textContent = count.textContent.replace(/\s*\/\s*/, up ? "/" : " / ");
+      var fs = parseFloat(getComputedStyle(cap).fontSize), mode;
+      if (!up) {                      // Vince 2026-10-26 10:23 AM CT: one line, longest tier whose real rendered width fits (after webfont load)
+        upPlan = null; cap.removeAttribute("data-tier"); cap.removeAttribute("data-widths");
+        if (showBefore) { setCap(null); mode = "one-line"; }
+        else {
+          var avail = hAvail(), T = tiersOf(SAMPLES[idx]), W = [], pick = null;
+          for (var t = 0; t < T.length; t++) { setParts(T[t].p); W.push(T[t].k + ":" + inkW().toFixed(1)); if (!pick && inkW() <= avail + 0.5 && !capWraps()) { pick = T[t]; break; } }
+          if (!pick) {                // even the minimal tier is too wide at the base size: step the font down (floor 18px); never seen at >= 300px
+            pick = T[T.length - 1]; setParts(pick.p);
+            while ((inkW() > avail + 0.5 || capWraps()) && fs > MIN) { fs -= 1; cap.style.fontSize = fs + "px"; }
+          } else setParts(pick.p);
+          mode = "tier-" + pick.k; cap.setAttribute("data-tier", pick.k); cap.setAttribute("data-widths", W.join(" ") + " avail:" + avail.toFixed(1));
+        }
+      } else {
+        cap.style.letterSpacing = "0";
+        var key = cap.parentNode.clientWidth + "|" + fs + "|" + (document.fonts ? document.fonts.status : "");   // re-plan once the webfont has loaded
+        if (!upPlan || upPlan.key !== key) { upPlan = planUp(); upPlan.key = key; }
+        var P = upPlan.lines[idx];
+        setCap(P.t); mode = "upright" + (P.ls ? ":tracked" + P.ls + "px" : "");
+        if (!showBefore) { cap.style.fontSize = P.f + "px"; if (P.ls) cap.style.letterSpacing = P.ls + "px"; }
+      }
+      cap.setAttribute("data-fit", mode + "|" + getComputedStyle(cap).fontSize);
+      placePaused();
+    }
+    // Horizontal screens (Vince 2026-10-26 10:39 AM CT): the "Paused" pill sits in the controls row (prev / play / next ... Join),
+    // centred under the painting, instead of over the painting. Clamped to stay >= 12px clear of Next and Join. Upright phones unchanged.
+    var pausedEl = document.querySelector(".sd-paused");
+    function placePaused() {
+      var ps = pausedEl.style;
+      if (UPRIGHT.matches) { ps.removeProperty("top"); ps.removeProperty("left"); pausedEl.removeAttribute("data-row"); return; }
+      var a = slides[idx].querySelector("img.ba-after").getBoundingClientRect(), d = drawer.getBoundingClientRect();
+      var c = document.querySelector(".sd-controls").getBoundingClientRect(), nx = btnNext.getBoundingClientRect(), jn = btnJoin.getBoundingClientRect();
+      var w = pausedEl.offsetWidth, h = pausedEl.offsetHeight, GAP = 12;
+      var cx = a.width ? a.left + a.width / 2 : d.left + d.width / 2;
+      var lo = nx.right + GAP + w / 2, hi = jn.left - GAP - w / 2;
+      cx = Math.max(lo, Math.min(hi, cx));
+      ps.left = (cx - d.left) + "px"; ps.top = (c.top + c.height / 2 - h / 2 - d.top) + "px";
+      pausedEl.setAttribute("data-row", lo <= hi ? "ok" : "tight");
     }
     function renderLabels() {
-      cap.textContent = showBefore ? "The original photo" : "In the style of " + SAMPLES[idx].artist;
       hint.textContent = showBefore ? "Tap to see the painting" : "Tap to see the original photo";
       hint.setAttribute("aria-pressed", showBefore ? "true" : "false");
       fitCap();
@@ -749,7 +898,7 @@
       f.classList.toggle("show-before", showBefore); f.classList.toggle("ba-swapped", !showBefore);
       renderLabels();
       if (user && !paused) setPaused(true);
-      if (user) live.textContent = showBefore ? "Showing the original photo. Slideshow paused." : "Showing the painting, in the style of " + SAMPLES[idx].artist + ". Slideshow paused.";
+      if (user) live.textContent = showBefore ? "Showing the original photo. Slideshow paused." : "Showing the painting, " + styleOf(SAMPLES[idx]) + ". Slideshow paused.";
     }
     function placePhoto(f) {          // lay the photo exactly over the painting's box (painting stays in flow)
       f = f || slides[idx]; var a = f.querySelector("img.ba-after"), b = f.querySelector("img.ba-before");
@@ -780,7 +929,9 @@
       }, PEEK_AT);
     }
     hint.addEventListener("click", function () { setBefore(!showBefore, true); });
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { upPlan = null; fitCap(); });   // plan with the real font, not the fallback
     window.addEventListener("resize", function () { fitCap(); slides.forEach(function (f) { placePhoto(f); }); });
+    window.addEventListener("orientationchange", function () { setTimeout(function () { fitCap(); slides.forEach(function (f) { placePhoto(f); }); }, 150); });   // rotate: re-fit the label once the new width settles
 
     function load(i) { slides[i].querySelectorAll("img[data-src]").forEach(function (im) { if (!im.getAttribute("src")) im.src = im.dataset.src; }); }
     function dur() { return reduce.matches ? DUR_RM : DUR; }
@@ -805,12 +956,13 @@
       showBefore = false; renderLabels();
       count.textContent = (idx + 1) + " / " + slides.length;
       fitCap();
-      if (announce) live.textContent = "Painting " + (idx + 1) + " of " + slides.length + ", in the style of " + SAMPLES[idx].artist;
+      if (announce) live.textContent = "Painting " + (idx + 1) + " of " + slides.length + ", " + styleOf(SAMPLES[idx]);
       schedule();
     }
     function setPaused(p) {
       paused = p;
       drawer.classList.toggle("is-paused", p);
+      placePaused();
       btnPause.setAttribute("aria-pressed", p ? "true" : "false");
       btnPause.setAttribute("aria-label", p ? "Play slideshow" : "Pause slideshow");
       document.getElementById("sdPauseIcon").innerHTML = p
@@ -979,7 +1131,7 @@
       zHint.textContent = coarse.matches ? "Pinch or double-tap to zoom · drag to move" : "Scroll or click to zoom · drag to move";
       zoomEl.classList.add("is-open"); zoomEl.setAttribute("aria-hidden", "false");
       zBtn.setAttribute("aria-expanded", "true");
-      live.textContent = (zb ? "Enlarged original photo" : "Enlarged painting, in the style of " + s.artist) + ". Press Escape or Close to return.";
+      live.textContent = (zb ? "Enlarged original photo" : "Enlarged painting, " + styleOf(s)) + ". Press Escape or Close to return.";
       setTimeout(function () { zClose.focus(); }, 0);
     }
     function closeZoom(silent) {
