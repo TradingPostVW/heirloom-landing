@@ -77,7 +77,18 @@
        844x390: 10px). Here the painting sits BESIDE the CLOSE tab instead of below it: 64px sides clear the 52px tab, 56px top clears the
        HEIRLOOM mark, 156px bottom = the desktop rule (painting ends ~20px into the bar's top scrim, above the hint text). */
     @media (max-width:899px) and (orientation:landscape) and (max-height:500px) {
-      .v-B .sd-slide { padding:56px 64px 156px; }
+      /* Vince 2026-10-26 12:35 PM CT (+ 12:37 "enlarge painting to gray divider line edge"): the painting's bottom edge sits on the grey divider (progress line) between the label row and
+         the buttons row. Bottom padding = bar bottom pad (14) + buttons row (48) + gap (14) + line (2) = 78px, so the painting ends on the
+         line's top edge; 64px sides clear CLOSE. The label band (hint + label + counter + zoom) overlays the
+         painting's bottom on a fade limited to that band; below the line is solid black. */
+      /* Vince 2026-10-26 2:24 PM CT, Option B: small HEIRLOOM wordmark top-left (12px = 67% of 18px, same .3em tracking), opposite CLOSE;
+         the painting starts 10px below it (top = --sd-top + 12px line + 10px) on every slide, so wide paintings never touch it. */
+      .sd-drawer .sd-top { left:0; right:auto; top:var(--sd-top); height:auto; padding-left:16px; background:none; justify-content:flex-start; align-items:flex-start; }
+      .sd-drawer .sd-mark { font-size:12px; line-height:1; letter-spacing:.3em; text-indent:0; }
+      /* align-items:flex-end: a painting limited by width (wide paintings on 480-wide phones) still ends on the line; spare room goes above it. */
+      .v-B .sd-slide { padding:calc(var(--sd-top) + 22px) 64px calc(max(14px, env(safe-area-inset-bottom)) + 64px); align-items:flex-end; }
+      .sd-drawer .sd-bottom { background:linear-gradient(rgba(0,0,0,0) 0, rgba(0,0,0,.55) 30px, rgba(0,0,0,.78) 98px, #000 98px); }
+      .sd-caption, .ba-hint, .sd-count { text-shadow:0 1px 3px rgba(0,0,0,.9); }
     }
 
     /* top + bottom chrome with scrims */
