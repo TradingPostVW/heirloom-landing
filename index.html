@@ -73,6 +73,12 @@
     @media (max-width:899px) { /* painting top sits below the CLOSE tab (top-right), so B never overlaps it */
       .v-B .sd-slide { padding:calc(var(--sd-top) + 176px + 12px) 12px 176px; }
     }
+    /* Sideways phones (landscape, <= 500px tall, < 900px wide; 2026-10-26): the rule above left 0-10px for the painting (667x375: 0px,
+       844x390: 10px). Here the painting sits BESIDE the CLOSE tab instead of below it: 64px sides clear the 52px tab, 56px top clears the
+       HEIRLOOM mark, 156px bottom = the desktop rule (painting ends ~20px into the bar's top scrim, above the hint text). */
+    @media (max-width:899px) and (orientation:landscape) and (max-height:500px) {
+      .v-B .sd-slide { padding:56px 64px 156px; }
+    }
 
     /* top + bottom chrome with scrims */
     .sd-top {
@@ -186,7 +192,8 @@
   </style>
 
   <style id="label-css">
-    /* Label: desktop / tablet / landscape = one line "Inspired by <School> · <Artist>" (U+00B7), >= 18px (Vince 2026-10-23 6:44/6:45 PM CT).
+    /* Label: desktop / tablet / landscape = ONE line, never wrapped or ellipsised (Vince 2026-10-26 10:23 AM CT): the longest of
+       "Inspired by <School> · <full name>" / "Inspired by <School> · <last name>" / "Inspired by <last name>" that fits the measured width.
        Upright phones (.sd-up = portrait and narrower than 600px; Vince 2026-10-24 9:08 AM CT): ONE line "Inspired by <artist last name>"
        ("Inspired by Brandywine School" on #13 + #20, the American Realism samples), no school, no dot. The label shares the 48px caption row with the zoom
        button only; the slide counter moves up to the right end of the "Tap to see..." hint line so every name fits at 300px.
@@ -697,7 +704,8 @@
     // Schools = the locked artist schools (explore/2026-10-06-live-app/public/artist-data.js; canon/LOCKS.md 2026-10-07/09).
     var SCHOOL = { "Leonardo":"Renaissance", "Rembrandt":"Baroque", "Fragonard":"Rococo", "David":"Neoclassicism", "Delacroix":"Romanticism",
       "Géricault":"Romanticism", "Turner":"Romanticism", "Degas":"Impressionism", "Van Gogh":"Post-Impressionism", "Seurat":"Post-Impressionism",
-      "Gauguin":"Post-Impressionism", "John Singer Sargent":"American Realism", "Homer":"American Realism", "Brandywine School":"American Realism" };
+      "Gauguin":"Post-Impressionism", "John Singer Sargent":"Academic Realism", "Homer":"American Realism", "Brandywine School":"American Realism" };
+    // Vince 2026-10-26 10:44 AM CT: Sargent = Academic Realism on the landing slideshow (the app's artist pages keep American Realism + explainer).
     var BW = "Brandywine School";   // green dress + orange tabby (no individual artist name on these samples)
     var SAMPLES = [
       { pair: 4,  src: "samples/04-rembrandt.jpg", artist: "Rembrandt", who: "Penn" },
@@ -724,9 +732,25 @@
       { pair: 24, src: "samples/24-american-realism.jpg", artist: BW, who: "a woman in a green dress" },
       { pair: 25, src: "samples/25-seurat.jpg",    artist: "Seurat",    who: "a chestnut boxer" }
     ];
-    function capOf(s) { return "Inspired by " + SCHOOL[s.artist] + " \u00b7 " + s.artist; }        // full label (also alt/aria/live)
-    function capForms(s) { return [capOf(s), "Inspired by " + SCHOOL[s.artist]]; }                 // shortening order
-    function styleOf(s) { return "inspired by " + SCHOOL[s.artist] + " \u00b7 " + s.artist; }
+    // Label rules (Vince 2026-10-26 10:23 AM CT). Full names = the app's artist cards (explore/2026-10-06-live-app/public/artist-data.js "name");
+    // Géricault is not in the app data. LAST = the last-name convention (Sargent, David, Géricault...); Leonardo -> "da Vinci".
+    var FULL = { "Leonardo":"Leonardo da Vinci", "Rembrandt":"Rembrandt van Rijn", "Fragonard":"Jean-Honoré Fragonard", "David":"Jacques-Louis David",
+      "Delacroix":"Eugène Delacroix", "Géricault":"Théodore Géricault", "Turner":"J. M. W. Turner", "Van Gogh":"Vincent van Gogh", "Gauguin":"Paul Gauguin",
+      "Degas":"Edgar Degas", "Seurat":"Georges Seurat", "John Singer Sargent":"John Singer Sargent", "Homer":"Winslow Homer" };
+    var LAST = { "Leonardo":"da Vinci", "John Singer Sargent":"Sargent" };   // every other artist key is already the last name
+    function fullOf(s) { return FULL[s.artist] || s.artist; }
+    function lastOf(s) { return LAST[s.artist] || s.artist; }
+    function capOf(s) { return "Inspired by " + SCHOOL[s.artist] + " \u00b7 " + fullOf(s); }       // full label (also alt/aria/live)
+    // Horizontal displays (landscape phones, tablets, desktop): ONE line, longest tier that fits the measured width.
+    //   a = "Inspired by <School> · <full name>", b = "Inspired by <School> · <last name>", c = "Inspired by <last name>".
+    //   Brandywine slides: a = b = "Inspired by American Realism · Brandywine School", c = "Inspired by Brandywine".
+    function tiersOf(s) {
+      var sch = "Inspired by " + SCHOOL[s.artist], bw = s.artist === BW;
+      return [ { k: "a", p: [sch, " \u00b7 " + (bw ? BW : fullOf(s))] },
+               { k: "b", p: [sch, " \u00b7 " + (bw ? BW : lastOf(s))] },
+               { k: "c", p: ["Inspired by " + (bw ? "Brandywine" : lastOf(s))] } ];
+    }
+    function styleOf(s) { return "inspired by " + SCHOOL[s.artist] + " \u00b7 " + fullOf(s); }
     var reduce = window.matchMedia("(prefers-reduced-motion: reduce)");
     var DUR = 6500, DUR_RM = 12000;
 
@@ -768,7 +792,7 @@
         f.appendChild(cr);
       }
       slidesEl.appendChild(f);
-      img.addEventListener("load", function () { placePhoto(f); });
+      img.addEventListener("load", function () { placePhoto(f); if (f === slides[idx]) placePaused(); });
       return f;
     });
 
@@ -780,23 +804,23 @@
       var r = document.createRange(); r.selectNodeContents(cap); var tops = {};
       Array.prototype.forEach.call(r.getClientRects(), function (q) { if (q.width > 0) tops[Math.round(q.top)] = 1; });
       return Object.keys(tops).length > 1 || cap.scrollWidth > cap.clientWidth + 1; }
-    function labelHTML(s) {          // one-line form: two unbreakable halves "Inspired by <School>" + " · <Artist>"
-      var c1 = document.createElement("span"), c2 = document.createElement("span"); c1.className = "c1"; c2.className = "c2";
-      c1.textContent = "Inspired by " + SCHOOL[s.artist]; c2.textContent = " \u00b7 " + s.artist; return [c1, c2];
+    function setParts(parts) {        // one or two unbreakable spans ("Inspired by <School>" + " · <Artist>")
+      cap.textContent = ""; parts.forEach(function (t, i) { var e = document.createElement("span"); e.className = i ? "c2" : "c1"; e.textContent = t; cap.appendChild(e); });
     }
     // Upright phone = portrait and narrower than 600px. Vince 2026-10-24 9:08 AM CT: one line "Inspired by <artist last name>";
-    // #13 + #20 (American Realism samples) "Inspired by Brandywine School". "Leonardo" (not "da Vinci") matches the app's artist card.
+    // #13 + #20 (American Realism samples) "Inspired by Brandywine School". Vince 2026-10-26 10:23 AM CT: Leonardo -> "Inspired by da Vinci".
     var UPRIGHT = window.matchMedia("(orientation: portrait) and (max-width: 599px)");
-    var LAST = { "John Singer Sargent":"Sargent" };                  // every other artist key is already the last name / app name
-    function upLabel(s) { return "Inspired by " + (LAST[s.artist] || s.artist); }
+    function upLabel(s) { return "Inspired by " + (s.artist === BW ? BW : lastOf(s)); }
     // Names are never shortened: if a label won't fit beside the zoom button at 20px, that slide steps down 1px at a time (floor 16px) with
     // letter spacing tightened up to 0.03em; no ellipses. The bar does not change size (fixed 48px row), so nothing jumps.
     var LABEL_MIN = 16, TRACK_MAX = 0.03;
-    function setCap(text) {           // text = upright one-line label, or null for the desktop/landscape two-part label
-      cap.textContent = "";
-      if (showBefore) { var o = document.createElement("span"); o.className = "c1"; o.textContent = "The original photo"; cap.appendChild(o); return; }
-      if (text === null) { var h = labelHTML(SAMPLES[idx]); cap.appendChild(h[0]); cap.appendChild(h[1]); return; }
-      var sp = document.createElement("span"); sp.className = "c1"; sp.textContent = text; cap.appendChild(sp);
+    function setCap(text) {           // text = upright one-line label (horizontal tiers use setParts)
+      setParts([showBefore ? "The original photo" : text]);
+    }
+    function inkW() { var r = document.createRange(); r.selectNodeContents(cap); return r.getBoundingClientRect().width; }   // rendered text width
+    function hAvail() {               // width the label may use on a horizontal display: caption row minus counter/zoom group minus gap
+      var row = cap.parentNode, cs = getComputedStyle(row);
+      return row.clientWidth - row.querySelector(".sd-cap-right").getBoundingClientRect().width - parseFloat(cs.columnGap || cs.gap || 12);
     }
     var measureEl = null;
     function tw(t, f) {               // text width at font-size f (letter-spacing 0, caption font)
@@ -825,10 +849,18 @@
       cap.style.removeProperty("font-size"); cap.style.removeProperty("letter-spacing");
       count.textContent = count.textContent.replace(/\s*\/\s*/, up ? "/" : " / ");
       var fs = parseFloat(getComputedStyle(cap).fontSize), mode;
-      if (!up) {
-        upPlan = null; setCap(null); mode = "one-line";
-        if (capWraps()) { count.textContent = count.textContent.replace(/\s*\/\s*/, "/"); cap.style.letterSpacing = "0";
-          while (capWraps() && fs > MIN) { fs -= 1; cap.style.fontSize = fs + "px"; } }
+      if (!up) {                      // Vince 2026-10-26 10:23 AM CT: one line, longest tier whose real rendered width fits (after webfont load)
+        upPlan = null; cap.removeAttribute("data-tier"); cap.removeAttribute("data-widths");
+        if (showBefore) { setCap(null); mode = "one-line"; }
+        else {
+          var avail = hAvail(), T = tiersOf(SAMPLES[idx]), W = [], pick = null;
+          for (var t = 0; t < T.length; t++) { setParts(T[t].p); W.push(T[t].k + ":" + inkW().toFixed(1)); if (!pick && inkW() <= avail + 0.5 && !capWraps()) { pick = T[t]; break; } }
+          if (!pick) {                // even the minimal tier is too wide at the base size: step the font down (floor 18px); never seen at >= 300px
+            pick = T[T.length - 1]; setParts(pick.p);
+            while ((inkW() > avail + 0.5 || capWraps()) && fs > MIN) { fs -= 1; cap.style.fontSize = fs + "px"; }
+          } else setParts(pick.p);
+          mode = "tier-" + pick.k; cap.setAttribute("data-tier", pick.k); cap.setAttribute("data-widths", W.join(" ") + " avail:" + avail.toFixed(1));
+        }
       } else {
         cap.style.letterSpacing = "0";
         var key = cap.parentNode.clientWidth + "|" + fs + "|" + (document.fonts ? document.fonts.status : "");   // re-plan once the webfont has loaded
@@ -838,6 +870,22 @@
         if (!showBefore) { cap.style.fontSize = P.f + "px"; if (P.ls) cap.style.letterSpacing = P.ls + "px"; }
       }
       cap.setAttribute("data-fit", mode + "|" + getComputedStyle(cap).fontSize);
+      placePaused();
+    }
+    // Horizontal screens (Vince 2026-10-26 10:39 AM CT): the "Paused" pill sits in the controls row (prev / play / next ... Join),
+    // centred under the painting, instead of over the painting. Clamped to stay >= 12px clear of Next and Join. Upright phones unchanged.
+    var pausedEl = document.querySelector(".sd-paused");
+    function placePaused() {
+      var ps = pausedEl.style;
+      if (UPRIGHT.matches) { ps.removeProperty("top"); ps.removeProperty("left"); pausedEl.removeAttribute("data-row"); return; }
+      var a = slides[idx].querySelector("img.ba-after").getBoundingClientRect(), d = drawer.getBoundingClientRect();
+      var c = document.querySelector(".sd-controls").getBoundingClientRect(), nx = btnNext.getBoundingClientRect(), jn = btnJoin.getBoundingClientRect();
+      var w = pausedEl.offsetWidth, h = pausedEl.offsetHeight, GAP = 12;
+      var cx = a.width ? a.left + a.width / 2 : d.left + d.width / 2;
+      var lo = nx.right + GAP + w / 2, hi = jn.left - GAP - w / 2;
+      cx = Math.max(lo, Math.min(hi, cx));
+      ps.left = (cx - d.left) + "px"; ps.top = (c.top + c.height / 2 - h / 2 - d.top) + "px";
+      pausedEl.setAttribute("data-row", lo <= hi ? "ok" : "tight");
     }
     function renderLabels() {
       hint.textContent = showBefore ? "Tap to see the painting" : "Tap to see the original photo";
@@ -914,6 +962,7 @@
     function setPaused(p) {
       paused = p;
       drawer.classList.toggle("is-paused", p);
+      placePaused();
       btnPause.setAttribute("aria-pressed", p ? "true" : "false");
       btnPause.setAttribute("aria-label", p ? "Play slideshow" : "Pause slideshow");
       document.getElementById("sdPauseIcon").innerHTML = p
