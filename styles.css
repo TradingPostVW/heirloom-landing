@@ -637,3 +637,7 @@ input.invalid, .chips.invalid {
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
 }
+
+/* Inline thank-you inside the waitlist dialog (2026-11-05): same look as thank-you.html, sized to the card. */
+.thanks-page.thanks-inline { min-height: 0; padding: 8px 0 24px; background: transparent; }
+.thanks-page.thanks-inline:focus { outline: none; }

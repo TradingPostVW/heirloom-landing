@@ -581,7 +581,48 @@
 
         document.getElementById("submitBtn").disabled = true;
         document.getElementById("submitBtn").textContent = "Saving…";
+
+        // Waitlist -> app (Vince 2026-11-05): app stores the sign-up and emails hello@.
+        // Any failure falls back to the original FormSubmit POST (form action), so no sign-up is lost.
+        if (!window.fetch || form.dataset.fallback === "1") return;
+        e.preventDefault();
+        var data = {};
+        Array.prototype.forEach.call(form.elements, function (el) {
+          if (!el.name || el.name.charAt(0) === "_" && el.name !== "_honey") return;
+          if (el.type === "checkbox") { if (el.checked) data[el.name] = el.value; return; }
+          data[el.name] = el.value;
+        });
+        var done = false;
+        var fallback = function () {
+          if (done) return; done = true;
+          form.dataset.fallback = "1";
+          HTMLFormElement.prototype.submit.call(form);
+        };
+        var timer = setTimeout(fallback, 12000);
+        fetch(WAITLIST_API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) })
+          .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); })
+          .then(function (res) {
+            if (done) return;
+            if (res.ok && res.j && res.j.ok) { done = true; clearTimeout(timer); showThanks(); }
+            else { clearTimeout(timer); fallback(); }
+          })
+          .catch(function () { clearTimeout(timer); fallback(); });
       });
+
+      var WAITLIST_API = "https://app.heirloomportraits.love/api/waitlist";
+      function showThanks() {
+        var lede = document.getElementById("waitlistLede");
+        if (lede) lede.hidden = true;
+        var box = document.createElement("div");
+        box.className = "thanks-page thanks-inline";
+        box.setAttribute("role", "status");
+        box.innerHTML = '<div class="thanks-mark" aria-hidden="true">✓</div>' +
+          '<h1>You’re on the list</h1>' +
+          '<p>Thanks for registering interest. We’ll be in touch when Heirloom is live.</p>';
+        form.hidden = true;
+        form.parentNode.insertBefore(box, form.nextSibling);
+        box.tabIndex = -1; box.focus();
+      }
     })();
   </script>
 
