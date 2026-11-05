@@ -1213,5 +1213,134 @@
   })();
   </script>
 
+  <!-- Phone SAMPLES = app QL-27 full-width vertical scroller (Vince 2026-11-05: "Yes, push the app-style sample scroller to the live phone landing").
+       Under 900px wide only, the SAMPLES tab opens this panel instead of the locked v3 slideshow drawer. Desktop (>=900px) keeps the drawer. -->
+  <style id="samples-scroller-css">
+    .ss-panel { position:fixed; inset:0; z-index:61; background:#000; color:#F3EEE6; display:none; flex-direction:column; overflow:hidden;
+      font-family:"Source Sans 3", system-ui, sans-serif; -webkit-font-smoothing:antialiased; }
+    .ss-panel.is-open { display:flex; }
+    .ss-panel .sam-x { position:absolute; right:8px; top:max(8px, env(safe-area-inset-top)); width:48px; height:48px; z-index:5; border-radius:12px;
+      display:flex; align-items:center; justify-content:center; background:rgba(43,42,40,.88); border:1.5px solid #F3EEE6; color:#F3EEE6; cursor:pointer; padding:0; }
+    .ss-panel .sam-x svg { width:24px; height:24px; fill:none; stroke:currentColor; stroke-width:2.4; stroke-linecap:round; }
+    .ss-body { flex:1 1 0; min-height:0; overflow-y:auto; -webkit-overflow-scrolling:touch; overscroll-behavior:contain;
+      padding:calc(12px + env(safe-area-inset-top, 0px)) 16px 24px; background:#000; }
+    .ss-panel .sam-top { height:64px; display:flex; align-items:center; justify-content:center; }
+    .ss-panel .sam-mark { font-family:"Tenor Sans", Optima, sans-serif; font-size:18px; letter-spacing:.3em; text-indent:.3em; color:#F3EEE6; }
+    .ss-panel .sam-title { font-family:"Tenor Sans", Optima, sans-serif; font-weight:400; font-size:24px; text-align:center; margin:4px 0 2px; color:#F3EEE6; }
+    .ss-panel .sam-sub { font-size:18px; line-height:1.4; color:#CFC6B8; text-align:center; margin:0 8px 16px; }
+    .ss-list { display:flex; flex-direction:column; gap:32px; width:100%; padding-bottom:8px; }
+    .ss-panel .sam-pair { margin:0; }
+    .ss-panel .sam-frame { display:flex; justify-content:center; align-items:center; width:100%; border-radius:12px; overflow:hidden; background:#1a1918; }
+    .ss-panel .sam-pair img { max-width:100%; width:100%; max-height:520px; height:auto; display:block; object-fit:contain; }
+    .ss-panel .sam-pair img.sam-b { display:none; }
+    .ss-panel .sam-pair.is-before img.sam-a { display:none; }
+    .ss-panel .sam-pair.is-before img.sam-b { display:block; }
+    .ss-panel .sam-cap { font-family:"Tenor Sans", Optima, sans-serif; font-size:20px; text-align:center; margin:12px 0 10px; color:#F3EEE6; }
+    .ss-panel .sam-pill { display:flex; margin:0 auto; width:232px; height:51px; border-radius:999px; border:1.5px solid rgba(243,238,230,.7); background:rgba(28,27,25,.6); overflow:hidden; }
+    .ss-panel .sam-pill button { flex:1; min-height:48px; border:0; background:none; color:#F3EEE6; font:600 18px/1 "Source Sans 3", sans-serif; cursor:pointer; }
+    .ss-panel .sam-pill button[aria-pressed="true"] { background:#F3EEE6; color:#2B2A28; }
+    .ss-panel .sam-pill button:focus-visible, .ss-panel .sam-x:focus-visible, .ss-join:focus-visible { outline:3px solid #B8834A; outline-offset:2px; }
+    .ss-cta { flex:0 0 auto; background:linear-gradient(rgba(0,0,0,0), #000 40%); padding:16px 16px calc(16px + env(safe-area-inset-bottom, 0px)); }
+    .ss-join { width:100%; height:60px; font-size:20px; font-weight:700; background:#2B2A28; color:#F3EEE6; border:1.5px solid #F3EEE6; border-radius:12px; cursor:pointer; font-family:"Source Sans 3", sans-serif; }
+    @media (min-width:900px) { .ss-panel { display:none !important; } }
+  </style>
+  <section class="ss-panel" id="ssPanel" role="dialog" aria-modal="true" aria-labelledby="ssTitle" aria-hidden="true">
+    <button type="button" class="sam-x" id="ssClose" aria-label="Close samples">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+    </button>
+    <div class="ss-body" id="ssBody">
+      <div class="sam-top"><span class="sam-mark" aria-hidden="true">HEIRLOOM</span></div>
+      <h2 class="sam-title" id="ssTitle">Sample portraits</h2>
+      <p class="sam-sub">Real pets and people, painted in the style of the masters.</p>
+      <div class="ss-list" id="ssList"></div>
+    </div>
+    <div class="ss-cta"><button type="button" class="ss-join" id="ssJoin">Join the waitlist</button></div>
+  </section>
+  <script id="samples-scroller-js">
+  (function () {
+    // Same 7 pairs, order and labels as the live app QL-27 Samples screen (QL27_PAIRS).
+    var PAIRS = [
+      { id: "25-seurat",    name: "Chestnut Boxer", style: "Inspired by Seurat" },
+      { id: "08-vangogh",   name: "Theo",           style: "Inspired by Van Gogh" },
+      { id: "04-rembrandt", name: "Penn",           style: "Inspired by Rembrandt" },
+      { id: "02-fragonard", name: "Pepa",           style: "Inspired by Fragonard" },
+      { id: "20-sargent",   name: "Woman & Horse",  style: "Inspired by Sargent" },
+      { id: "19-homer",     name: "Red Ridgeback",  style: "Inspired by Homer" },
+      { id: "13-gericault", name: "Sal & Horse",    style: "Inspired by Gericault" }
+    ];
+    var phone = window.matchMedia("(max-width: 899px)");
+    var tab = document.getElementById("sdTab"), panel = document.getElementById("ssPanel"), list = document.getElementById("ssList");
+    var body = document.getElementById("ssBody"), btnX = document.getElementById("ssClose"), btnJoin = document.getElementById("ssJoin");
+    var page = document.querySelector(".page"), isOpen = false, built = false;
+    function esc(s) { return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/"/g, "&quot;"); }
+    function build() {
+      if (built) return; built = true;
+      list.innerHTML = PAIRS.map(function (p) {
+        var who = esc(p.name), st = esc(p.style);
+        return '<figure class="sam-pair" data-id="' + p.id + '">' +
+          '<div class="sam-frame"><img class="sam-a" src="samples/' + p.id + '.jpg" alt="Heirloom portrait of ' + who + ', ' + st + '" decoding="async" />' +
+          '<img class="sam-b" src="samples/before/' + p.id + '.jpg" alt="The original photo of ' + who + ', before painting" decoding="async" /></div>' +
+          '<p class="sam-cap">' + st + '</p>' +
+          '<div class="sam-pill" role="group" aria-label="Show photo or painting"><button type="button" aria-pressed="false" data-side="before">Before</button>' +
+          '<button type="button" aria-pressed="true" data-side="after">After</button></div></figure>';
+      }).join("");
+      Array.prototype.forEach.call(list.querySelectorAll(".sam-pill button"), function (b) {
+        b.addEventListener("click", function () {
+          var f = b.closest(".sam-pair"), fr = f.querySelector(".sam-frame"), toB = b.getAttribute("data-side") === "before";
+          var nx = f.querySelector(toB ? "img.sam-b" : "img.sam-a");   // hold frame height until the other image loads (app glitch fix 2026-11-01)
+          if (nx && !nx.complete) { fr.style.minHeight = fr.offsetHeight + "px";
+            var done = function () { fr.style.minHeight = ""; }; nx.addEventListener("load", done, { once: true }); nx.addEventListener("error", done, { once: true }); }
+          f.classList.toggle("is-before", toB);
+          Array.prototype.forEach.call(f.querySelectorAll(".sam-pill button"), function (x) { x.setAttribute("aria-pressed", x === b ? "true" : "false"); });
+        });
+      });
+    }
+    function setInert(on) {
+      [page, tab].forEach(function (el) { if (!el) return;
+        if (on) { el.setAttribute("inert", ""); el.setAttribute("aria-hidden", "true"); } else { el.removeAttribute("inert"); el.removeAttribute("aria-hidden"); } });
+    }
+    function openPanel() {
+      build(); isOpen = true;
+      panel.classList.add("is-open"); panel.setAttribute("aria-hidden", "false");
+      document.body.classList.add("sd-open"); tab.setAttribute("aria-expanded", "true");
+      setInert(true); body.scrollTop = 0;
+      setTimeout(function () { btnX.focus(); }, 30);
+    }
+    function closePanel(after) {
+      if (!isOpen) return; isOpen = false;
+      panel.classList.remove("is-open"); panel.setAttribute("aria-hidden", "true");
+      document.body.classList.remove("sd-open"); tab.setAttribute("aria-expanded", "false");
+      setInert(false);
+      if (after) after(); else tab.focus();
+    }
+    // Capture phase: on phones, take the SAMPLES tab before the v3 drawer handler sees it.
+    tab.addEventListener("click", function (e) {
+      if (!phone.matches) return;
+      e.stopImmediatePropagation(); e.preventDefault(); openPanel();
+    }, true);
+    btnX.addEventListener("click", function () { closePanel(); });
+    btnJoin.addEventListener("click", function () {
+      closePanel(function () {
+        var openBtn = document.getElementById("openWaitlist");
+        openBtn.focus(); openBtn.click();   // opens the existing waitlist <dialog>
+        setTimeout(function () { var e = document.getElementById("email"); if (e) e.focus(); }, 90);
+      });
+    });
+    panel.addEventListener("keydown", function (e) {
+      if (!isOpen) return;
+      if (e.key === "Escape") { e.preventDefault(); closePanel(); return; }
+      if (e.key === "Tab") {
+        var f = Array.prototype.slice.call(panel.querySelectorAll("button")).filter(function (b) { return b.getClientRects().length > 0; });
+        var first = f[0], last = f[f.length - 1];
+        if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+      }
+    });
+    // Rotating/resizing a phone past 900px wide: close the phone panel so the desktop layout is clean.
+    var onChange = function () { if (!phone.matches && isOpen) closePanel(); };
+    if (phone.addEventListener) phone.addEventListener("change", onChange); else if (phone.addListener) phone.addListener(onChange);
+  })();
+  </script>
+
 </body>
 </html>
